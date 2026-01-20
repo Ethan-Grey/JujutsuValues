@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="hero-heading text-center mb-4">
+    <div class="hero-pill mb-3">
+        <span class="dot"></span>
+        <span class="small fw-semibold">Updated by community admins</span>
+    </div>
+    <h1 class="hero-title fw-bold mb-2">Jujutsu Infinite Value List</h1>
+    <p class="hero-subtitle mb-3">
+        Track live trade values for cursed objects, weapons, titles, game passes, and event items.
+        View-only for players, curated by trusted value admins.
+    </p>
+    <div class="hero-tags d-flex flex-wrap justify-content-center gap-2">
+        <span class="badge bg-dark-soft">Rarity tiers</span>
+        <span class="badge bg-dark-soft">Price trends</span>
+        <span class="badge bg-dark-soft">Demand ratings</span>
+        <span class="badge bg-dark-soft">Event exclusives</span>
+    </div>
+</section>
+
+<section class="mb-3">
+    <form method="get">
+        <div class="modern-search-container">
+            <div class="modern-search-wrapper">
+                <div class="modern-search-input-group">
+                    <i class="bi bi-search search-icon-modern"></i>
+                    <input type="search"
+                           name="q"
+                           value="{{ active_filters.q }}"
+                           class="modern-search-input"
+                           placeholder="Search items...">
+                </div>
+                <div class="modern-filter-buttons">
+                    <button type="button"
+                            class="modern-filter-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#filtersModal">
+                        <i class="bi bi-sliders"></i>
+                        <span>Filters</span>
+                    </button>
+                    <button type="submit" class="modern-apply-btn">
+                        <i class="bi bi-check-lg"></i>
+                        <span>Apply</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters modal (fields stay in same form so GET works) -->
+        <div class="modal fade" id="filtersModal" tabindex="-1" aria-labelledby="filtersModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content dark-modal">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="filtersModalLabel">Advanced Filters</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold">Category</label>
+                                <select name="category" class="form-select">
+                                    <option value="">All</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.slug }}" {% if active_filters.category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold">Rarity</label>
+                                <select name="rarity" class="form-select">
+                                    <option value="">All</option>
+                                    {% for key,label in rarity_choices %}
+                                        <option value="{{ key }}" {% if active_filters.rarity == key %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold">Type</label>
+                                <select name="item_type" class="form-select">
+                                    <option value="">All</option>
+                                    {% for key,label in type_choices %}
+                                        <option value="{{ key }}" {% if active_filters.item_type == key %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold">Trend</label>
+                                <select name="trend" class="form-select">
+                                    <option value="">Any</option>
+                                    {% for key,label in trend_choices %}
+                                        <option value="{{ key }}" {% if active_filters.trend == key %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <label class="form-label fw-semibold">Min Value</label>
+                                <input type="number" min="0" name="min_value" value="{{ active_filters.min_value }}" class="form-control" placeholder="0">
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <label class="form-label fw-semibold">Max Value</label>
+                                <input type="number" min="0" name="max_value" value="{{ active_filters.max_value }}" class="form-control" placeholder="2000">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold">Sort</label>
+                                <select name="sort" class="form-select">
+                                    <option value="">Featured</option>
+                                    <option value="value_asc" {% if active_filters.sort == "value_asc" %}selected{% endif %}>Value: Low → High</option>
+                                    <option value="name" {% if active_filters.sort == "name" %}selected{% endif %}>Name</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <a href="{% url 'values:item_list' %}" class="btn btn-outline-secondary">Clear all</a>
+                        <button type="submit" class="btn btn-primary">Apply filters</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="mb-2 d-flex justify-content-between align-items-center">
+    <div class="fw-semibold text-muted">Showing {{ page_obj.paginator.count }} items</div>
+    <div class="small text-muted">Admins can update values via Django admin</div>
+</section>
+
+<section>
+    {% if items %}
+        <div class="row g-3">
+            {% for item in items %}
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <a href="{{ item.get_absolute_url }}" class="text-decoration-none">
+                    <div class="modern-item-card card h-100 border-0">
+                        {% if item.image_url %}
+                        <div class="modern-card-image">
+                            <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                        </div>
+                        {% else %}
+                        <div class="modern-card-image no-image">
+                            <i class="bi bi-image"></i>
+                        </div>
+                        {% endif %}
+                        <div class="modern-card-body">
+                            <div class="modern-card-badges">
+                                <span class="item-type-badge">{{ item.get_item_type_display|upper }}</span>
+                                <span class="rarity-badge rarity-{{ item.rarity }}">{{ item.get_rarity_display|upper }}</span>
+                            </div>
+                            <div class="modern-card-category">{{ item.category.name|upper }}</div>
+                            <h5 class="modern-card-name">{{ item.name }}</h5>
+                            <div class="modern-card-footer">
+                                <div class="modern-card-value">
+                                    <span class="value-amount">{{ item.value|floatformat:0 }}</span>
+                                </div>
+                                <div class="modern-card-stars">
+                                    {% with star_count=item.get_star_count %}
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= star_count %}
+                                                <i class="bi bi-star-fill star-filled"></i>
+                                            {% else %}
+                                                <i class="bi bi-star star-empty"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <nav class="mt-4" aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode|cut:'page='|cut:'page=' }}{% endif %}">Previous</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                    {% endif %}
+
+                    <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode|cut:'page='|cut:'page=' }}{% endif %}">Next</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Next</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <p class="lead mb-2">No items found for these filters.</p>
+            <a class="btn btn-outline-primary" href="{% url 'values:item_list' %}">Clear filters</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
