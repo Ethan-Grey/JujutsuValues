@@ -1,9 +1,20 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth import login, logout
+from django.contrib.auth.views import LoginView
 from django.db.models import Q
-from django.http import JsonResponse
-from django.views.generic import DetailView, ListView, TemplateView
+from django.http import JsonResponse, HttpResponseRedirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
+from django.views.generic import DetailView, ListView, TemplateView, CreateView, UpdateView
 from django.views.decorators.http import require_http_methods
 
+from .forms import ItemForm
 from .models import Category, Item
+
+
+def is_admin(user):
+    return user.is_authenticated and user.is_staff
 
 
 class LandingPageView(TemplateView):
@@ -77,6 +88,7 @@ class ItemListView(ListView):
                 "type_choices": Item.ItemType.choices,
                 "trend_choices": Item.Trend.choices,
                 "active_filters": self.request.GET,
+                "is_admin": self.request.user.is_authenticated and self.request.user.is_staff,
             }
         )
         return context
@@ -87,6 +99,11 @@ class ItemDetailView(DetailView):
     template_name = "values/item_detail.html"
     context_object_name = "item"
     slug_field = "slug"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_admin'] = self.request.user.is_authenticated and self.request.user.is_staff
+        return context
 
 
 class TradeCalculatorView(TemplateView):
@@ -155,5 +172,52 @@ def api_items_list(request):
         )
 
     return JsonResponse({"items": items_data})
+
+
+class CustomLoginView(LoginView):
+    template_name = 'values/login.html'
+    redirect_authenticated_user = True
+    next_page = reverse_lazy('values:landing')
+
+    def get_success_url(self):
+        return self.request.GET.get('next', self.next_page)
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('values:landing')
+
+
+class AdminRequiredMixin(UserPassesTestMixin):
+    """Mixin to require admin (staff) access"""
+    login_url = 'values:login'
+
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_staff
+
+
+class ItemCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
+    model = Item
+    form_class = ItemForm
+    template_name = 'values/item_form.html'
+    success_url = reverse_lazy('values:item_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Create New Item'
+        return context
+
+
+class ItemUpdateView(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
+    model = Item
+    form_class = ItemForm
+    template_name = 'values/item_form.html'
+    slug_field = 'slug'
+    success_url = reverse_lazy('values:item_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Edit {self.object.name}'
+        return context
 
 # Create your views here.

@@ -1,115 +1,111 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Home - Jujutsu Infinite Values{% endblock %}
+
 {% block content %}
-<section class="hero-section text-center mb-5">
-    <div class="hero-pill mb-3">
-        <span class="dot"></span>
-        <span class="small fw-semibold">Updated by community admins</span>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-background">
+        <div class="hero-gradient"></div>
     </div>
-    <h1 class="hero-title fw-bold mb-3">Jujutsu Infinite Value List</h1>
-    <p class="hero-subtitle mb-4">
-        Track live trade values for cursed objects, weapons, titles, game passes, and event items.
-        View-only for players, curated by trusted value admins.
-    </p>
-    <div class="d-flex flex-column flex-md-row gap-3 justify-content-center mb-5">
-        <a href="{% url 'values:item_list' %}" class="btn btn-primary btn-lg px-5">Browse All Items</a>
-        <a href="{% url 'values:trade_calculator' %}" class="btn btn-success btn-lg px-5">Trade Calculator</a>
-        <a href="{% url 'values:item_list' %}?featured=1" class="btn btn-outline-primary btn-lg px-5">Featured Items</a>
-    </div>
-</section>
-
-<section class="categories-section mb-5">
-    <h2 class="text-center mb-4 fw-bold">Browse by Category</h2>
-    <div class="row g-3">
-        {% for category in categories %}
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="{% url 'values:item_list' %}?category={{ category.slug }}" class="text-decoration-none">
-                <div class="category-card card h-100 shadow-sm border-0">
-                    <div class="card-body text-center">
-                        <div class="category-icon mb-3" style="background: {{ category.color }}20; color: {{ category.color }}; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 1.5rem;">
-                            <i class="bi bi-box"></i>
-                        </div>
-                        <h5 class="card-title mb-1">{{ category.name }}</h5>
-                        <p class="text-muted small mb-0">{{ category.items.count }} items</p>
-                    </div>
+    <div class="container hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                <span>CURSED ENERGY DETECTED</span>
+            </div>
+            <h1 class="hero-title">
+                TRACK <span class="highlight">CURSED VALUES</span><br>
+                JUJUTSU INFINITE
+            </h1>
+            <p class="hero-description">
+                Real-time values for cursed objects, weapons, armor, titles, and more.<br>
+                Curated by trusted sorcerers, updated regularly for accurate trading.
+            </p>
+            <div class="hero-buttons">
+                <a href="{% url 'values:item_list' %}" class="btn-hero btn-hero-primary">
+                    <span>Browse Items</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'values:trade_calculator' %}" class="btn-hero btn-hero-secondary">
+                    <i class="bi bi-calculator"></i>
+                    <span>Trade Calculator</span>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_items }}+</div>
+                    <div class="stat-label">Items</div>
                 </div>
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-</section>
-
-<section class="item-types-section mb-5">
-    <h2 class="text-center mb-4 fw-bold">Browse by Type</h2>
-    <div class="row g-3">
-        <div class="col-6 col-md-3">
-            <a href="{% url 'values:item_list' %}?category=weapons" class="text-decoration-none">
-                <div class="type-card card h-100 shadow-sm border-0 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-sword fs-1 mb-2 text-primary"></i>
-                        <h5 class="card-title">Weapons</h5>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ categories|length }}+</div>
+                    <div class="stat-label">Categories</div>
                 </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a href="{% url 'values:item_list' %}?item_type=title" class="text-decoration-none">
-                <div class="type-card card h-100 shadow-sm border-0 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-trophy fs-1 mb-2 text-warning"></i>
-                        <h5 class="card-title">Titles</h5>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number">Live</div>
+                    <div class="stat-label">Updates</div>
                 </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a href="{% url 'values:item_list' %}?item_type=gamepass" class="text-decoration-none">
-                <div class="type-card card h-100 shadow-sm border-0 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-star fs-1 mb-2 text-info"></i>
-                        <h5 class="card-title">Game Passes</h5>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a href="{% url 'values:item_list' %}?item_type=event" class="text-decoration-none">
-                <div class="type-card card h-100 shadow-sm border-0 text-center">
-                    <div class="card-body">
-                        <i class="bi bi-calendar-event fs-1 mb-2 text-danger"></i>
-                        <h5 class="card-title">Event Items</h5>
-                    </div>
-                </div>
-            </a>
+            </div>
         </div>
     </div>
 </section>
 
+<!-- Categories Section -->
+<section class="categories-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Browse by Category</h2>
+            <p class="section-subtitle">Explore items organized by type</p>
+        </div>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <a href="{% url 'values:item_list' %}?category={{ category.slug }}" class="category-card">
+                <div class="category-icon-wrapper" style="background: linear-gradient(135deg, {{ category.color }}20, {{ category.color }}10);">
+                    <div class="category-icon" style="color: {{ category.color }};">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                </div>
+                <div class="category-info">
+                    <h3 class="category-name">{{ category.name }}</h3>
+                    <span class="category-count">{{ category.items.count }} items</span>
+                </div>
+                <div class="category-arrow">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Items -->
 {% if featured_items %}
-<section class="featured-section mb-5">
-    <h2 class="text-center mb-4 fw-bold">Featured Items</h2>
-    <div class="row g-3">
-        {% for item in featured_items %}
-        <div class="col-6 col-md-4 col-lg-2">
-            <a href="{{ item.get_absolute_url }}" class="text-decoration-none">
-                <div class="card h-100 shadow-sm border-0">
-                    {% if item.image_url %}
-                    <div class="card-img-box">
-                        <img src="{{ item.image_url }}" class="item-card-img" alt="{{ item.name }}">
-                    </div>
-                    {% endif %}
-                    <div class="card-body">
-                        <h6 class="card-title mb-1">{{ item.name }}</h6>
-                        <div class="text-primary fw-bold">{{ item.value }}</div>
-                    </div>
+<section class="featured-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Featured Items</h2>
+            <p class="section-subtitle">Popular and high-value items</p>
+        </div>
+        <div class="featured-grid">
+            {% for item in featured_items %}
+            <a href="{{ item.get_absolute_url }}" class="featured-card">
+                {% if item.image_url %}
+                <div class="featured-image">
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                </div>
+                {% endif %}
+                <div class="featured-content">
+                    <div class="featured-badge rarity-{{ item.rarity }}">{{ item.get_rarity_display }}</div>
+                    <h3 class="featured-name">{{ item.name }}</h3>
+                    <div class="featured-value">{{ item.value }}</div>
                 </div>
             </a>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    <div class="text-center mt-4">
-        <a href="{% url 'values:item_list' %}" class="btn btn-outline-primary">View All {{ total_items }} Items</a>
+        <div class="section-footer">
+            <a href="{% url 'values:item_list' %}" class="btn-outline">View All {{ total_items }} Items</a>
+        </div>
     </div>
 </section>
 {% endif %}

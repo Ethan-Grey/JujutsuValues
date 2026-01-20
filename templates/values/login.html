@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login - Jujutsu Infinite Values{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-background">
+        <div class="login-gradient"></div>
+        <div class="login-pattern"></div>
+    </div>
+    
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 200px);">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-icon">
+                        <span class="cursed-icon">呪</span>
+                    </div>
+                    <h1 class="login-title">SORCERER LOGIN</h1>
+                    <p class="login-subtitle">Access the cursed energy database</p>
+                </div>
+
+                {% if form.errors %}
+                <div class="login-alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Invalid credentials. Cursed energy signature not recognized.</span>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'values:login' %}" class="login-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-group-cursed">
+                        <label for="id_username" class="form-label-cursed">
+                            <i class="bi bi-person"></i>
+                            <span>Username</span>
+                        </label>
+                        <input type="text" 
+                               name="username" 
+                               id="id_username" 
+                               class="form-input-cursed" 
+                               required 
+                               autofocus
+                               placeholder="Enter your sorcerer name">
+                    </div>
+
+                    <div class="form-group-cursed">
+                        <label for="id_password" class="form-label-cursed">
+                            <i class="bi bi-lock"></i>
+                            <span>Password</span>
+                        </label>
+                        <input type="password" 
+                               name="password" 
+                               id="id_password" 
+                               class="form-input-cursed" 
+                               required
+                               placeholder="Enter your cursed technique">
+                    </div>
+
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    <button type="submit" class="btn-login-cursed">
+                        <span>ACTIVATE</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="login-footer">
+                    <a href="{% url 'values:landing' %}" class="back-link-cursed">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Return to Home</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-page {
+    position: relative;
+    padding: 2rem 0;
+    width: 100%;
+}
+
+.login-background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.login-gradient {
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 30% 50%, rgba(220, 38, 38, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+        linear-gradient(180deg, #0a0a0a 0%, #111111 100%);
+}
+
+.login-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(220, 38, 38, 0.03) 2px, rgba(220, 38, 38, 0.03) 4px);
+    opacity: 0.5;
+}
+
+.login-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.login-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent);
+    border-radius: 0.5rem;
+    padding: 3rem 2.5rem;
+    box-shadow: var(--shadow-xl), 0 0 40px var(--accent-glow);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), #ff0000);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.login-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(220, 38, 38, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.login-icon {
+    margin-bottom: 1.5rem;
+}
+
+.cursed-icon {
+    font-size: 4rem;
+    background: linear-gradient(135deg, var(--accent), #ff0000);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 15px var(--accent-glow));
+    animation: pulse-glow 2s ease-in-out infinite;
+    display: inline-block;
+}
+
+.login-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.login-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.login-alert {
+    background: rgba(220, 38, 38, 0.1);
+    border: 2px solid var(--accent);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.login-alert i {
+    font-size: 1.25rem;
+}
+
+.login-form {
+    position: relative;
+    z-index: 1;
+}
+
+.form-group-cursed {
+    margin-bottom: 1.5rem;
+}
+
+.form-label-cursed {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.form-label-cursed i {
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+.form-input-cursed {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    transition: all 0.3s;
+}
+
+.form-input-cursed::placeholder {
+    color: var(--text-muted);
+}
+
+.form-input-cursed:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-secondary);
+    box-shadow: 0 0 20px var(--accent-glow), inset 0 0 10px rgba(220, 38, 38, 0.1);
+}
+
+.btn-login-cursed {
+    width: 100%;
+    padding: 1.25rem 2rem;
+    background: var(--accent);
+    color: white;
+    border: 2px solid var(--accent);
+    border-radius: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 0 20px var(--accent-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.btn-login-cursed::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-login-cursed:hover::before {
+    width: 400px;
+    height: 400px;
+}
+
+.btn-login-cursed:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px var(--accent-glow), var(--shadow-lg);
+    border-color: var(--accent-hover);
+}
+
+.btn-login-cursed:active {
+    transform: translateY(0);
+}
+
+.login-footer {
+    margin-top: 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.back-link-cursed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.back-link-cursed:hover {
+    color: var(--accent);
+    text-shadow: 0 0 8px var(--accent-glow);
+    transform: translateX(-4px);
+}
+
+@media (max-width: 768px) {
+    .login-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .login-title {
+        font-size: 1.5rem;
+    }
+    
+    .cursed-icon {
+        font-size: 3rem;
+    }
+}
+</style>
+{% endblock %}

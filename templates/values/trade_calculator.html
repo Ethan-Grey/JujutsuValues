@@ -1,166 +1,148 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Trade Calculator - Jujutsu Infinite Values{% endblock %}
+
 {% block content %}
-<div class="mb-3">
-    <a href="{% url 'values:landing' %}" class="btn btn-outline-secondary btn-sm">← Back to Home</a>
-</div>
-
-<div class="trade-calculator-container">
-    <div class="text-center mb-4">
-        <h1 class="fw-bold mb-2">Trade Calculator</h1>
-        <p class="text-muted mb-3">
-            Build both sides and compare totals instantly. Supports quantity multipliers.
-        </p>
-        <div class="alert alert-warning d-inline-flex align-items-center gap-2" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <span>Values move. Use this as a baseline, then sanity-check demand and what people are actually taking in trades.</span>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-        <!-- Offer Side -->
-        <div class="col-12 col-lg-6">
-            <div class="trade-side">
-                <h3 class="trade-side-title mb-3">Offer</h3>
-                <div class="trade-slots-grid" id="offerSlots">
-                    {% for i in "123456789" %}
-                    <div class="trade-slot" data-side="offer" data-slot="{{ forloop.counter0 }}">
-                        <div class="trade-slot-content">
-                            <span class="trade-slot-label">SELECT</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="trade-totals mt-3">
-                    <div class="trade-total-item">
-                        <span class="trade-total-label">Value Total:</span>
-                        <span class="trade-total-value" id="offerTotal">0</span>
-                    </div>
-                </div>
-            </div>
+<div class="calculator-page">
+    <div class="container">
+        <div class="calculator-header">
+            <h1 class="calculator-title">Trade Calculator</h1>
+            <p class="calculator-subtitle">Compare trade values side by side</p>
         </div>
 
-        <!-- Request Side -->
-        <div class="col-12 col-lg-6">
-            <div class="trade-side">
-                <h3 class="trade-side-title mb-3">Request</h3>
-                <div class="trade-slots-grid" id="requestSlots">
-                    {% for i in "123456789" %}
-                    <div class="trade-slot" data-side="request" data-slot="{{ forloop.counter0 }}">
-                        <div class="trade-slot-content">
-                            <span class="trade-slot-label">SELECT</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="trade-totals mt-3">
-                    <div class="trade-total-item">
-                        <span class="trade-total-label">Value Total:</span>
-                        <span class="trade-total-value" id="requestTotal">0</span>
+        <div class="trade-wrapper">
+            <!-- Left Side - Offer -->
+            <div class="trade-column">
+                <div class="column-header">
+                    <h2 class="column-title">Your Offer</h2>
+                    <div class="column-total">
+                        <span>Total: </span>
+                        <span class="total-amount" id="offerTotal">0</span>
                     </div>
                 </div>
+                <div class="items-list" id="offerItems">
+                    <!-- Items will be added here -->
+                </div>
+                <button class="add-item-btn" data-side="offer">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add Item</span>
+                </button>
+            </div>
+
+            <!-- Center - VS -->
+            <div class="vs-section">
+                <div class="vs-line-top"></div>
+                <div class="vs-badge">VS</div>
+                <div class="vs-line-bottom"></div>
+            </div>
+
+            <!-- Right Side - Request -->
+            <div class="trade-column">
+                <div class="column-header">
+                    <h2 class="column-title">Their Request</h2>
+                    <div class="column-total">
+                        <span>Total: </span>
+                        <span class="total-amount" id="requestTotal">0</span>
+                    </div>
+                </div>
+                <div class="items-list" id="requestItems">
+                    <!-- Items will be added here -->
+                </div>
+                <button class="add-item-btn" data-side="request">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add Item</span>
+                </button>
             </div>
         </div>
-    </div>
 
-    <!-- Trade Summary -->
-    <div class="trade-summary">
-        <h4 class="mb-3">Trade Summary</h4>
-        <div class="trade-summary-content">
-            <div class="trade-summary-row">
-                <span>Offer Total:</span>
-                <span id="summaryOfferTotal">0</span>
+        <!-- Summary -->
+        <div class="trade-summary">
+            <div class="summary-row">
+                <span class="summary-label">Offer:</span>
+                <span class="summary-number" id="summaryOffer">0</span>
             </div>
-            <div class="trade-summary-row">
-                <span>Request Total:</span>
-                <span id="summaryRequestTotal">0</span>
+            <div class="summary-row">
+                <span class="summary-label">Request:</span>
+                <span class="summary-number" id="summaryRequest">0</span>
             </div>
-            <div class="trade-summary-row trade-summary-difference">
-                <span>Difference:</span>
-                <span id="summaryDifference">0</span>
+            <div class="summary-row summary-diff">
+                <span class="summary-label">Difference:</span>
+                <span class="summary-number" id="summaryDiff">0</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Item Selection Modal -->
-<div class="modal fade" id="itemSelectModal" tabindex="-1" aria-labelledby="itemSelectModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content dark-modal">
+<!-- Simple Item Selection Modal -->
+<div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="itemSelectModalLabel">Select Item</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="itemModalLabel">Select Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Search and Filters -->
-                <div class="row g-3 mb-4">
-                    <div class="col-12 col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" id="itemSearchInput" placeholder="Search items...">
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <select class="form-select" id="itemCategoryFilter">
-                            <option value="">All Categories</option>
-                            {% for category in categories %}
-                            <option value="{{ category.slug }}">{{ category.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <select class="form-select" id="itemRarityFilter">
-                            <option value="">All Rarities</option>
-                            {% for key, label in rarity_choices %}
-                            <option value="{{ key }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <select class="form-select" id="itemSort">
-                            <option value="name">Sort: Name</option>
-                            <option value="value_desc">Sort: Value (High-Low)</option>
-                            <option value="value_asc">Sort: Value (Low-High)</option>
-                            <option value="rarity">Sort: Rarity (High-Low)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Items Grid -->
-                <div class="row g-3" id="itemsGrid">
-                    <!-- Items will be loaded here via JavaScript -->
-                </div>
-                <div id="itemsLoading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-                <div id="itemsEmpty" class="text-center py-5 text-muted" style="display: none;">
-                    No items found. Try adjusting your search or filters.
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Quantity Selection Modal -->
-<div class="modal fade" id="quantityModal" tabindex="-1" aria-labelledby="quantityModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content dark-modal">
-            <div class="modal-header">
-                <h5 class="modal-title" id="quantityModalLabel">Set Quantity</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
+                <!-- Filters -->
                 <div class="mb-3">
-                    <label for="quantityInput" class="form-label">Quantity:</label>
-                    <input type="number" class="form-control" id="quantityInput" min="1" value="1" step="1">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="modalSearch" placeholder="Search items...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="modalCategory">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.slug }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="modalRarity">
+                                <option value="">All Rarities</option>
+                                {% for key, label in rarity_choices %}
+                                <option value="{{ key }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmQuantityBtn">Confirm</button>
+                
+                <!-- Selected Item Display -->
+                <div id="selectedItemDisplay" style="display: none;" class="mb-3 p-3 border rounded">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <img id="selectedItemImg" src="" alt="" style="width: 50px; height: 50px; object-fit: contain;">
+                            <div>
+                                <div id="selectedItemName" class="fw-bold"></div>
+                                <div id="selectedItemValue" class="text-muted small"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="mb-0">Qty:</label>
+                            <input type="number" id="qtyInput" min="1" value="1" class="form-control" style="width: 80px;">
+                        </div>
+                    </div>
                 </div>
+                
+                <!-- Items List -->
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <div id="modalItemsList"></div>
+                    <div id="modalLoading" class="text-center py-5">
+                        <div class="spinner-border text-danger" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-2">Loading items...</div>
+                    </div>
+                    <div id="modalEmpty" class="text-center py-5" style="display: none;">
+                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                        <div class="mt-2 text-muted">No items found</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAddBtn" disabled>Add Item</button>
             </div>
         </div>
     </div>

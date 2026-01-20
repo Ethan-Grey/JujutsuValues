@@ -136,6 +136,14 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # --------------------------------------------------
+# AUTHENTICATION
+# --------------------------------------------------
+
+LOGIN_URL = 'values:login'
+LOGIN_REDIRECT_URL = 'values:landing'
+LOGOUT_REDIRECT_URL = 'values:landing'
+
+# --------------------------------------------------
 # DEFAULT PRIMARY KEY
 # --------------------------------------------------
 

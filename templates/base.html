@@ -4,117 +4,148 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Jujutsu Infinite Values</title>
+    <title>{% block title %}Jujutsu Infinite Values{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <!-- Bootstrap Icons for search/filter icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
-<body>
-<nav class="navbar navbar-expand-lg shadow-sm sticky-top">
-    <div class="container">
-        <a class="navbar-brand fw-bold text-primary" href="{% url 'values:landing' %}">Jujutsu Infinite Values</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+<body class="d-flex flex-column min-vh-100 theme-dark">
+<!-- Navigation -->
+<nav class="main-navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <a href="{% url 'values:landing' %}" class="brand-link">
+                <span class="brand-icon">呪</span>
+                <span class="brand-text">JJI Values</span>
+            </a>
+        </div>
+        
+        <button class="nav-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
-        <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'values:landing' %}">Home</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Categories
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?category=cursed-objects">Cursed Objects</a></li>
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?category=weapons">Weapons</a></li>
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?category=armor">Armor</a></li>
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?category=titles">Titles</a></li>
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?category=items">Items</a></li>
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?category=game-passes">Game Passes</a></li>
+        
+        <div class="collapse navbar-collapse show" id="navMenu">
+            <ul class="nav-menu">
+                <li><a href="{% url 'values:item_list' %}" class="nav-link-item">Browse</a></li>
+                <li><a href="{% url 'values:item_list' %}?category=weapons" class="nav-link-item">Weapons</a></li>
+                <li><a href="{% url 'values:item_list' %}?category=armor" class="nav-link-item">Armor</a></li>
+                <li><a href="{% url 'values:item_list' %}?category=titles" class="nav-link-item">Titles</a></li>
+                <li><a href="{% url 'values:item_list' %}?category=cursed-objects" class="nav-link-item">Cursed Objects</a></li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-link-item">More <i class="bi bi-chevron-down ms-1"></i></a>
+                    <ul class="dropdown-menu-nav">
+                        <li><a href="{% url 'values:item_list' %}?category=items">Items</a></li>
+                        <li><a href="{% url 'values:item_list' %}?category=game-passes">Game Passes</a></li>
+                        <li><a href="{% url 'values:item_list' %}?item_type=title">All Titles</a></li>
+                        <li><a href="{% url 'values:item_list' %}?item_type=gamepass">All Game Passes</a></li>
+                        <li><a href="{% url 'values:item_list' %}?item_type=event">Event Items</a></li>
                     </ul>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="typesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Types
+                <li><a href="{% url 'values:trade_calculator' %}" class="nav-link-item">Calculator</a></li>
+            </ul>
+            
+            <div class="nav-actions">
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                        <a href="{% url 'values:item_create' %}" class="btn-nav btn-nav-primary">
+                            Create
+                        </a>
+                        <a href="/admin/" class="btn-nav">
+                            Admin
+                        </a>
+                    {% endif %}
+                    <div class="user-menu">
+                        <button class="btn-nav user-btn">
+                            {{ user.username }}
+                        </button>
+                        <div class="user-dropdown">
+                            <a href="{% url 'values:logout' %}">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'values:login' %}" class="btn-nav">
+                        Login
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="typesDropdown">
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?item_type=title">Titles</a></li>
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?item_type=gamepass">Game Passes</a></li>
-                        <li><a class="dropdown-item" href="{% url 'values:item_list' %}?item_type=event">Event Items</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'values:item_list' %}">All Items</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'values:trade_calculator' %}">Trade Calculator</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center">
-                <li class="nav-item">
-                    <a class="nav-link" href="/admin/">Admin</a>
-                </li>
-                <li class="nav-item ms-lg-3">
-                    <button id="themeToggle" class="btn btn-sm btn-outline-secondary theme-toggle-btn" type="button">
-                        <i class="bi bi-moon-fill me-1"></i>
-                        <span class="d-none d-md-inline">Dark</span>
-                    </button>
-                </li>
-            </ul>
+                {% endif %}
+                <button id="themeToggle" class="btn-nav theme-toggle">
+                    <i class="bi bi-moon-fill"></i>
+                </button>
+            </div>
         </div>
     </div>
 </nav>
 
-<main class="py-4">
-    <div class="container">
-        {% block content %}{% endblock %}
-    </div>
+<!-- Main Content -->
+<main class="main-content flex-grow-1">
+    {% block content %}{% endblock %}
 </main>
 
-<footer class="border-top py-4 mt-5">
-<div class="container text-center small text-muted">
-        Community-driven reference for Jujutsu Infinite trades. Admins manage updates; players browse safely.
+<!-- Footer -->
+<footer class="main-footer">
+    <div class="footer-container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="brand-icon">呪</span>
+                <span>JJI Values</span>
+            </div>
+            <p class="footer-text">Community-driven value reference for Jujutsu Infinite trades</p>
+        </div>
+        <div class="footer-links">
+            <a href="{% url 'values:item_list' %}">Browse Items</a>
+            <a href="{% url 'values:trade_calculator' %}">Calculator</a>
+            {% if user.is_staff %}<a href="/admin/">Admin</a>{% endif %}
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 JJI Values. All rights reserved.</p>
     </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</script>
 <script>
-    (function () {
+    // Theme Toggle
+    (function() {
         const body = document.body;
         const stored = localStorage.getItem('theme');
-        if (stored === 'dark') {
-            body.classList.add('theme-dark');
-        }
-
+        if (stored === 'dark') body.classList.add('theme-dark');
+        
         const btn = document.getElementById('themeToggle');
         if (!btn) return;
-
-        function render() {
-            const isDark = body.classList.contains('theme-dark');
+        
+        function updateIcon() {
             const icon = btn.querySelector('i');
-            const label = btn.querySelector('span');
-            if (isDark) {
-                icon.className = 'bi bi-sun-fill me-1';
-                if (label) label.textContent = 'Light';
-            } else {
-                icon.className = 'bi bi-moon-fill me-1';
-                if (label) label.textContent = 'Dark';
-            }
+            icon.className = body.classList.contains('theme-dark') ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
         }
-
-        btn.addEventListener('click', function () {
-            const isDark = body.classList.toggle('theme-dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            render();
+        
+        btn.addEventListener('click', () => {
+            body.classList.toggle('theme-dark');
+            localStorage.setItem('theme', body.classList.contains('theme-dark') ? 'dark' : 'light');
+            updateIcon();
         });
-
-        render();
+        
+        updateIcon();
     })();
+    
+    // Dropdown menus
+    document.querySelectorAll('.nav-dropdown').forEach(dropdown => {
+        const link = dropdown.querySelector('.nav-link-item');
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            dropdown.classList.toggle('active');
+        });
+    });
+    
+    // User menu
+    const userBtn = document.querySelector('.user-btn');
+    if (userBtn) {
+        userBtn.addEventListener('click', () => {
+            document.querySelector('.user-menu').classList.toggle('active');
+        });
+    }
 </script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>
-

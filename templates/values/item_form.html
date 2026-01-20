@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} - Jujutsu Infinite Values{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="container">
+        <div class="form-header">
+            <a href="{% url 'values:item_list' %}" class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Items</span>
+            </a>
+            <h1 class="form-title">{{ title }}</h1>
+            <p class="form-subtitle">Manage cursed item database</p>
+        </div>
+
+        <div class="form-card">
+            <form method="post" enctype="multipart/form-data" class="item-form">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="form-alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Please correct the errors below</span>
+                </div>
+                {% endif %}
+                
+                <div class="form-section">
+                    <h3 class="section-title">Basic Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                <i class="bi bi-tag"></i>
+                                <span>Item Name *</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="form-error">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">
+                                <i class="bi bi-folder"></i>
+                                <span>Category *</span>
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="form-error">{{ form.category.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.item_type.id_for_label }}" class="form-label">
+                                <i class="bi bi-box"></i>
+                                <span>Item Type *</span>
+                            </label>
+                            {{ form.item_type }}
+                            {% if form.item_type.errors %}
+                                <div class="form-error">{{ form.item_type.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.rarity.id_for_label }}" class="form-label">
+                                <i class="bi bi-star"></i>
+                                <span>Rarity *</span>
+                            </label>
+                            {{ form.rarity }}
+                            {% if form.rarity.errors %}
+                                <div class="form-error">{{ form.rarity.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Value & Market</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="{{ form.value.id_for_label }}" class="form-label">
+                                <i class="bi bi-currency-dollar"></i>
+                                <span>Value *</span>
+                            </label>
+                            {{ form.value }}
+                            {% if form.value.errors %}
+                                <div class="form-error">{{ form.value.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.demand.id_for_label }}" class="form-label">
+                                <i class="bi bi-graph-up"></i>
+                                <span>Demand (1-10) *</span>
+                            </label>
+                            {{ form.demand }}
+                            {% if form.demand.errors %}
+                                <div class="form-error">{{ form.demand.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.trend.id_for_label }}" class="form-label">
+                                <i class="bi bi-arrow-trending-up"></i>
+                                <span>Trend *</span>
+                            </label>
+                            {{ form.trend }}
+                            {% if form.trend.errors %}
+                                <div class="form-error">{{ form.trend.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Media & Details</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="{{ form.image_url.id_for_label }}" class="form-label">
+                                <i class="bi bi-image"></i>
+                                <span>Image URL</span>
+                            </label>
+                            {{ form.image_url }}
+                            <small class="form-hint">Example: /media/Weapons/Heian_Gauntlet.png</small>
+                            {% if form.image_url.errors %}
+                                <div class="form-error">{{ form.image_url.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="{{ form.obtained_from.id_for_label }}" class="form-label">
+                                <i class="bi bi-map"></i>
+                                <span>Obtained From</span>
+                            </label>
+                            {{ form.obtained_from }}
+                            {% if form.obtained_from.errors %}
+                                <div class="form-error">{{ form.obtained_from.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                <i class="bi bi-file-text"></i>
+                                <span>Description/Notes</span>
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="form-error">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Flags</h3>
+                    <div class="form-check-group">
+                        <div class="form-check-item">
+                            {{ form.is_limited }}
+                            <label class="form-check-label" for="{{ form.is_limited.id_for_label }}">
+                                <i class="bi bi-lock"></i>
+                                <span>Limited Item</span>
+                            </label>
+                        </div>
+                        {% if form.is_limited.errors %}
+                            <div class="form-error">{{ form.is_limited.errors }}</div>
+                        {% endif %}
+
+                        <div class="form-check-item">
+                            {{ form.featured }}
+                            <label class="form-check-label" for="{{ form.featured.id_for_label }}">
+                                <i class="bi bi-star-fill"></i>
+                                <span>Featured Item</span>
+                            </label>
+                        </div>
+                        {% if form.featured.errors %}
+                            <div class="form-error">{{ form.featured.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-lg"></i>
+                        <span>Save Item</span>
+                    </button>
+                    <a href="{% url 'values:item_list' %}" class="btn-cancel">
+                        <i class="bi bi-x"></i>
+                        <span>Cancel</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-page {
+    padding: 2rem 0;
+    min-height: calc(100vh - 200px);
+}
+
+.form-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+
+.back-link:hover {
+    color: var(--accent);
+    transform: translateX(-4px);
+}
+
+.form-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 15px var(--accent-glow);
+}
+
+.form-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.form-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent);
+    border-radius: 0.5rem;
+    padding: 2.5rem;
+    box-shadow: var(--shadow-xl), 0 0 40px var(--accent-glow);
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), #ff0000);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.form-alert {
+    background: rgba(220, 38, 38, 0.1);
+    border: 2px solid var(--accent);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border);
+    text-shadow: 0 0 8px var(--accent-glow);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.form-label i {
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="url"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-secondary);
+    box-shadow: 0 0 20px var(--accent-glow), inset 0 0 10px rgba(220, 38, 38, 0.1);
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.form-error {
+    margin-top: 0.5rem;
+    color: var(--accent);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-check-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-check-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--accent);
+}
+
+.form-check-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.form-check-label i {
+    color: var(--accent);
+}
+
+.form-check-label:hover {
+    color: var(--accent);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border);
+}
+
+.btn-submit,
+.btn-cancel {
+    padding: 0.875rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    border: 2px solid;
+}
+
+.btn-submit {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.btn-submit:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px var(--accent-glow), var(--shadow-lg);
+}
+
+.btn-cancel {
+    background: transparent;
+    color: var(--text-primary);
+    border-color: var(--border);
+}
+
+.btn-cancel:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+@media (max-width: 768px) {
+    .form-card {
+        padding: 1.5rem;
+    }
+    
+    .form-title {
+        font-size: 1.75rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-submit,
+    .btn-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

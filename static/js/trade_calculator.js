@@ -1,321 +1,346 @@
-// Trade Calculator JavaScript
-
-let currentSlot = null;
-let currentSide = null;
-let selectedItem = null;
-let tradeData = {
-    offer: Array(9).fill(null),
-    request: Array(9).fill(null)
-};
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeTradeCalculator();
-});
-
-function initializeTradeCalculator() {
-    // Set up slot click handlers
-    document.querySelectorAll('.trade-slot').forEach(slot => {
-        slot.addEventListener('click', function() {
-            openItemSelectModal(this);
-        });
-    });
-
-    // Set up search and filter handlers
-    const searchInput = document.getElementById('itemSearchInput');
-    const categoryFilter = document.getElementById('itemCategoryFilter');
-    const rarityFilter = document.getElementById('itemRarityFilter');
-    const sortSelect = document.getElementById('itemSort');
-
-    if (searchInput) {
-        let searchTimeout;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => loadItems(), 300);
-        });
-    }
-
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', loadItems);
-    }
-
-    if (rarityFilter) {
-        rarityFilter.addEventListener('change', loadItems);
-    }
-
-    if (sortSelect) {
-        sortSelect.addEventListener('change', loadItems);
-    }
-
-    // Set up quantity modal handlers
-    const confirmQuantityBtn = document.getElementById('confirmQuantityBtn');
-    if (confirmQuantityBtn) {
-        confirmQuantityBtn.addEventListener('click', confirmQuantity);
-    }
-
-    // Load items when modal opens
-    const itemModal = document.getElementById('itemSelectModal');
-    if (itemModal) {
-        itemModal.addEventListener('show.bs.modal', function() {
-            loadItems();
-        });
-    }
-
-    updateTotals();
-}
-
-function openItemSelectModal(slotElement) {
-    currentSlot = slotElement;
-    currentSide = slotElement.dataset.side;
-    const modal = new bootstrap.Modal(document.getElementById('itemSelectModal'));
-    modal.show();
-}
-
-function loadItems() {
-    const searchQuery = document.getElementById('itemSearchInput').value;
-    const category = document.getElementById('itemCategoryFilter').value;
-    const rarity = document.getElementById('itemRarityFilter').value;
-    const sort = document.getElementById('itemSort').value;
-
-    const params = new URLSearchParams();
-    if (searchQuery) params.append('q', searchQuery);
-    if (category) params.append('category', category);
-    if (rarity) params.append('rarity', rarity);
-    if (sort) params.append('sort', sort);
-
-    const itemsGrid = document.getElementById('itemsGrid');
-    const itemsLoading = document.getElementById('itemsLoading');
-    const itemsEmpty = document.getElementById('itemsEmpty');
-
-    itemsGrid.innerHTML = '';
-    itemsLoading.style.display = 'block';
-    itemsEmpty.style.display = 'none';
-
-    fetch(`/api/items/?${params.toString()}`)
-        .then(response => response.json())
-        .then(data => {
-            itemsLoading.style.display = 'none';
-            
-            if (data.items.length === 0) {
-                itemsEmpty.style.display = 'block';
-                return;
-            }
-
-            data.items.forEach(item => {
-                const itemCard = createItemCard(item);
-                itemsGrid.appendChild(itemCard);
-            });
-        })
-        .catch(error => {
-            console.error('Error loading items:', error);
-            itemsLoading.style.display = 'none';
-            itemsEmpty.style.display = 'block';
-            itemsEmpty.textContent = 'Error loading items. Please try again.';
-        });
-}
-
-function createItemCard(item) {
-    const col = document.createElement('div');
-    col.className = 'col-6 col-md-4 col-lg-3';
-
-    const card = document.createElement('div');
-    card.className = 'modern-item-card card h-100 border-0';
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', () => selectItem(item));
-
-    const imageContainer = document.createElement('div');
-    imageContainer.className = 'modern-card-image';
-    if (item.image_url) {
-        const img = document.createElement('img');
-        img.src = item.image_url;
-        img.alt = item.name;
-        imageContainer.appendChild(img);
-    } else {
-        imageContainer.className = 'modern-card-image no-image';
-        imageContainer.innerHTML = '<i class="bi bi-image"></i>';
-    }
-
-    const cardBody = document.createElement('div');
-    cardBody.className = 'modern-card-body';
-
-    const badges = document.createElement('div');
-    badges.className = 'modern-card-badges';
+// Trade Calculator - Simplified Popup Version
+(function() {
+    'use strict';
     
-    const typeBadge = document.createElement('span');
-    typeBadge.className = 'item-type-badge';
-    typeBadge.textContent = item.category.toUpperCase();
-    
-    const rarityBadge = document.createElement('span');
-    rarityBadge.className = 'rarity-badge rarity-' + item.rarity_key;
-    rarityBadge.textContent = item.rarity.toUpperCase();
-    
-    badges.appendChild(typeBadge);
-    badges.appendChild(rarityBadge);
-
-    const category = document.createElement('div');
-    category.className = 'modern-card-category';
-    category.textContent = item.category.toUpperCase();
-
-    const name = document.createElement('h5');
-    name.className = 'modern-card-name';
-    name.textContent = item.name;
-
-    const valueDiv = document.createElement('div');
-    valueDiv.className = 'modern-card-value';
-    const valueAmount = document.createElement('span');
-    valueAmount.className = 'value-amount';
-    valueAmount.textContent = formatValue(item.value);
-    valueDiv.appendChild(valueAmount);
-
-    cardBody.appendChild(badges);
-    cardBody.appendChild(category);
-    cardBody.appendChild(name);
-    cardBody.appendChild(valueDiv);
-
-    card.appendChild(imageContainer);
-    card.appendChild(cardBody);
-    col.appendChild(card);
-
-    return col;
-}
-
-function selectItem(item) {
-    selectedItem = item;
-    const itemModal = bootstrap.Modal.getInstance(document.getElementById('itemSelectModal'));
-    itemModal.hide();
-    
-    // Show quantity modal
-    const quantityModal = new bootstrap.Modal(document.getElementById('quantityModal'));
-    document.getElementById('quantityInput').value = 1;
-    quantityModal.show();
-}
-
-function confirmQuantity() {
-    const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
-    
-    if (!selectedItem || !currentSlot || !currentSide) return;
-
-    const slotIndex = parseInt(currentSlot.dataset.slot);
-    
-    // Store item data
-    tradeData[currentSide][slotIndex] = {
-        id: selectedItem.id,
-        name: selectedItem.name,
-        value: selectedItem.value,
-        image_url: selectedItem.image_url,
-        category: selectedItem.category,
-        category_color: selectedItem.category_color,
-        quantity: quantity
+    // State
+    const state = {
+        currentSide: null,
+        selectedItem: null,
+        items: {
+            offer: [],
+            request: []
+        }
     };
-
-    // Update slot display
-    updateSlotDisplay(currentSlot, tradeData[currentSide][slotIndex]);
-
-    // Close quantity modal
-    const quantityModal = bootstrap.Modal.getInstance(document.getElementById('quantityModal'));
-    quantityModal.hide();
-
-    // Reset selection
-    selectedItem = null;
-    currentSlot = null;
-    currentSide = null;
-
-    updateTotals();
-}
-
-function updateSlotDisplay(slotElement, itemData) {
-    if (!itemData) {
-        slotElement.innerHTML = `
-            <div class="trade-slot-content">
-                <span class="trade-slot-label">SELECT</span>
+    
+    // Initialize
+    function init() {
+        console.log('Trade calculator initializing...');
+        
+        // Setup add buttons
+        document.querySelectorAll('.add-item-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                state.currentSide = this.getAttribute('data-side');
+                state.selectedItem = null;
+                console.log('Opening modal for side:', state.currentSide);
+                openModal();
+            });
+        });
+        
+        // Setup confirm button
+        const confirmBtn = document.getElementById('confirmAddBtn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', confirmAdd);
+        }
+        
+        // Setup search/filter
+        const searchInput = document.getElementById('modalSearch');
+        const categorySelect = document.getElementById('modalCategory');
+        const raritySelect = document.getElementById('modalRarity');
+        
+        if (searchInput) {
+            let timeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(loadItems, 300);
+            });
+        }
+        
+        if (categorySelect) {
+            categorySelect.addEventListener('change', loadItems);
+        }
+        
+        if (raritySelect) {
+            raritySelect.addEventListener('change', loadItems);
+        }
+        
+        // Load items when modal opens
+        const modal = document.getElementById('itemModal');
+        if (modal) {
+            modal.addEventListener('show.bs.modal', function() {
+                resetModal();
+                loadItems();
+            });
+        }
+        
+        updateTotals();
+        console.log('Trade calculator ready');
+    }
+    
+    function openModal() {
+        const modalEl = document.getElementById('itemModal');
+        if (!modalEl) {
+            console.error('Modal not found!');
+            return;
+        }
+        
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap not loaded!');
+            return;
+        }
+        
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+    
+    function resetModal() {
+        state.selectedItem = null;
+        document.getElementById('modalSearch').value = '';
+        document.getElementById('modalCategory').value = '';
+        document.getElementById('modalRarity').value = '';
+        document.getElementById('selectedItemDisplay').style.display = 'none';
+        document.getElementById('confirmAddBtn').disabled = true;
+        document.getElementById('qtyInput').value = 1;
+    }
+    
+    function loadItems() {
+        const search = document.getElementById('modalSearch')?.value || '';
+        const category = document.getElementById('modalCategory')?.value || '';
+        const rarity = document.getElementById('modalRarity')?.value || '';
+        
+        const params = new URLSearchParams();
+        if (search) params.set('q', search);
+        if (category) params.set('category', category);
+        if (rarity) params.set('rarity', rarity);
+        params.set('sort', 'name');
+        
+        const listEl = document.getElementById('modalItemsList');
+        const loadingEl = document.getElementById('modalLoading');
+        const emptyEl = document.getElementById('modalEmpty');
+        
+        if (!listEl || !loadingEl || !emptyEl) return;
+        
+        listEl.innerHTML = '';
+        loadingEl.style.display = 'block';
+        emptyEl.style.display = 'none';
+        
+        fetch(`/api/items/?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingEl.style.display = 'none';
+                
+                if (!data.items || data.items.length === 0) {
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+                
+                data.items.forEach(item => {
+                    const itemEl = createItemElement(item);
+                    listEl.appendChild(itemEl);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+                emptyEl.innerHTML = '<div class="text-danger">Error loading items</div>';
+            });
+    }
+    
+    function createItemElement(item) {
+        const div = document.createElement('div');
+        div.className = 'modal-item mb-2 p-2 border rounded cursor-pointer';
+        div.style.cursor = 'pointer';
+        div.style.transition = 'all 0.2s';
+        
+        div.innerHTML = `
+            <div class="d-flex align-items-center gap-3">
+                ${item.image_url ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" style="width: 60px; height: 60px; object-fit: contain;">` : '<div style="width: 60px; height: 60px; background: #333; display: flex; align-items: center; justify-content: center; color: #666;"><i class="bi bi-image"></i></div>'}
+                <div class="flex-grow-1">
+                    <div class="fw-bold">${escapeHtml(item.name)}</div>
+                    <div class="small text-muted">
+                        <span class="badge bg-secondary">${escapeHtml(item.rarity)}</span>
+                        <span class="ms-2">${formatValue(item.value)}</span>
+                    </div>
+                </div>
             </div>
         `;
-        slotElement.addEventListener('click', function() {
-            openItemSelectModal(this);
+        
+        div.addEventListener('click', function() {
+            selectItem(item);
         });
-        return;
+        
+        div.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(220, 38, 38, 0.1)';
+            this.style.borderColor = '#dc2626';
+        });
+        
+        div.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+            this.style.borderColor = '';
+        });
+        
+        return div;
     }
-
-    const totalValue = itemData.value * itemData.quantity;
-    const side = slotElement.dataset.side;
-    const slotIndex = slotElement.dataset.slot;
     
-    slotElement.innerHTML = `
-        <div class="trade-slot-content">
-            ${itemData.image_url ? `<img src="${itemData.image_url}" alt="${itemData.name}" class="trade-slot-image">` : ''}
-            <div class="trade-slot-info">
-                <div class="trade-slot-name">${itemData.name}</div>
-                <div class="trade-slot-value">${formatValue(totalValue)}</div>
-                ${itemData.quantity > 1 ? `<div class="trade-slot-quantity">x${itemData.quantity}</div>` : ''}
+    function selectItem(item) {
+        console.log('Item selected:', item.name);
+        state.selectedItem = item;
+        
+        // Show selected item display
+        const display = document.getElementById('selectedItemDisplay');
+        const img = document.getElementById('selectedItemImg');
+        const name = document.getElementById('selectedItemName');
+        const value = document.getElementById('selectedItemValue');
+        
+        if (item.image_url) {
+            img.src = item.image_url;
+            img.style.display = 'block';
+        } else {
+            img.style.display = 'none';
+        }
+        
+        name.textContent = item.name;
+        value.textContent = `${item.rarity} • ${formatValue(item.value)}`;
+        display.style.display = 'block';
+        
+        // Enable confirm button
+        document.getElementById('confirmAddBtn').disabled = false;
+        
+        // Scroll to selected item display
+        display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    function confirmAdd() {
+        if (!state.selectedItem || !state.currentSide) {
+            console.error('Cannot add: missing item or side');
+            return;
+        }
+        
+        const qtyInput = document.getElementById('qtyInput');
+        const quantity = parseInt(qtyInput?.value) || 1;
+        
+        console.log('Adding:', state.selectedItem.name, 'x' + quantity, 'to', state.currentSide);
+        
+        // Add item
+        state.items[state.currentSide].push({
+            id: state.selectedItem.id,
+            name: state.selectedItem.name,
+            value: state.selectedItem.value,
+            image_url: state.selectedItem.image_url,
+            quantity: quantity
+        });
+        
+        // Close modal
+        const modalEl = document.getElementById('itemModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) {
+            modal.hide();
+        }
+        
+        // Update display
+        renderAll();
+    }
+    
+    function renderAll() {
+        renderSide('offer');
+        renderSide('request');
+        updateTotals();
+    }
+    
+    function renderSide(side) {
+        const container = document.getElementById(side + 'Items');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        state.items[side].forEach((item, index) => {
+            const itemEl = createTradeItemElement(item, side, index);
+            container.appendChild(itemEl);
+        });
+    }
+    
+    function createTradeItemElement(item, side, index) {
+        const div = document.createElement('div');
+        div.className = 'trade-item';
+        
+        const totalValue = item.value * item.quantity;
+        const imgHtml = item.image_url
+            ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" class="trade-item-img">`
+            : '<div class="trade-item-img no-img"><i class="bi bi-image"></i></div>';
+        
+        div.innerHTML = `
+            ${imgHtml}
+            <div class="trade-item-details">
+                <div class="trade-item-name">${escapeHtml(item.name)}</div>
+                <div class="trade-item-meta">
+                    ${item.quantity > 1 ? `<span class="trade-item-qty">x${item.quantity}</span>` : ''}
+                    <span class="trade-item-value">${formatValue(totalValue)}</span>
+                </div>
             </div>
-            <button class="trade-slot-remove" onclick="removeItem(event, '${side}', ${slotIndex})">
+            <button class="trade-item-remove" type="button">
                 <i class="bi bi-x"></i>
             </button>
-        </div>
-    `;
-    
-    // Re-add click handler to allow replacing items
-    slotElement.addEventListener('click', function(e) {
-        if (!e.target.closest('.trade-slot-remove')) {
-            openItemSelectModal(this);
-        }
-    });
-}
-
-function removeItem(event, side, slotIndex) {
-    event.stopPropagation();
-    event.preventDefault();
-    tradeData[side][slotIndex] = null;
-    const slotElement = document.querySelector(`[data-side="${side}"][data-slot="${slotIndex}"]`);
-    if (slotElement) {
-        updateSlotDisplay(slotElement, null);
+        `;
+        
+        const removeBtn = div.querySelector('.trade-item-remove');
+        removeBtn.addEventListener('click', function() {
+            removeItem(side, index);
+        });
+        
+        return div;
     }
-    updateTotals();
-}
-
-function updateTotals() {
-    let offerTotal = 0;
-    let requestTotal = 0;
-
-    tradeData.offer.forEach(item => {
-        if (item) {
+    
+    function removeItem(side, index) {
+        state.items[side].splice(index, 1);
+        renderAll();
+    }
+    
+    function updateTotals() {
+        let offerTotal = 0;
+        let requestTotal = 0;
+        
+        state.items.offer.forEach(item => {
             offerTotal += item.value * item.quantity;
-        }
-    });
-
-    tradeData.request.forEach(item => {
-        if (item) {
+        });
+        
+        state.items.request.forEach(item => {
             requestTotal += item.value * item.quantity;
+        });
+        
+        const offerEl = document.getElementById('offerTotal');
+        const requestEl = document.getElementById('requestTotal');
+        if (offerEl) offerEl.textContent = formatValue(offerTotal);
+        if (requestEl) requestEl.textContent = formatValue(requestTotal);
+        
+        const summaryOffer = document.getElementById('summaryOffer');
+        const summaryRequest = document.getElementById('summaryRequest');
+        const summaryDiff = document.getElementById('summaryDiff');
+        
+        if (summaryOffer) summaryOffer.textContent = formatValue(offerTotal);
+        if (summaryRequest) summaryRequest.textContent = formatValue(requestTotal);
+        
+        if (summaryDiff) {
+            const diff = offerTotal - requestTotal;
+            if (diff > 0) {
+                summaryDiff.textContent = '+' + formatValue(diff);
+                summaryDiff.style.color = 'var(--success)';
+            } else if (diff < 0) {
+                summaryDiff.textContent = '-' + formatValue(Math.abs(diff));
+                summaryDiff.style.color = 'var(--danger)';
+            } else {
+                summaryDiff.textContent = '0';
+                summaryDiff.style.color = 'var(--text-primary)';
+            }
         }
-    });
-
-    document.getElementById('offerTotal').textContent = formatValue(offerTotal);
-    document.getElementById('requestTotal').textContent = formatValue(requestTotal);
-    document.getElementById('summaryOfferTotal').textContent = formatValue(offerTotal);
-    document.getElementById('summaryRequestTotal').textContent = formatValue(requestTotal);
-
-    const difference = offerTotal - requestTotal;
-    const differenceElement = document.getElementById('summaryDifference');
-    differenceElement.textContent = formatValue(Math.abs(difference));
+    }
     
-    if (difference > 0) {
-        differenceElement.className = 'text-success';
-        differenceElement.textContent = '+' + formatValue(difference);
-    } else if (difference < 0) {
-        differenceElement.className = 'text-danger';
-        differenceElement.textContent = '-' + formatValue(Math.abs(difference));
+    function formatValue(value) {
+        if (value >= 1000) {
+            return (value / 1000).toFixed(1) + 'K';
+        }
+        return value.toString();
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Start when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
     } else {
-        differenceElement.className = '';
-        differenceElement.textContent = '0';
+        init();
     }
-}
-
-function formatValue(value) {
-    if (value >= 1000) {
-        return (value / 1000).toFixed(1) + 'K';
-    }
-    return value.toString();
-}
-
-// Make removeItem available globally
-window.removeItem = removeItem;
+})();
