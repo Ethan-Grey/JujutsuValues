@@ -126,12 +126,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# WhiteNoise configuration for serving static files
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
-
-# In some Railway setups, `collectstatic` may not run as expected. This lets WhiteNoise
-# serve files directly from `STATICFILES_DIRS` as a fallback.
-WHITENOISE_USE_FINDERS = True
 
 # --------------------------------------------------
 # MEDIA FILES
