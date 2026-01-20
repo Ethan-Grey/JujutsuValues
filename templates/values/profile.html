@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profile - Jujutsu Infinite Values{% endblock %}
+
+{% block content %}
+<div class="page-header-section">
+    <div class="container">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title-large">Your Inventory</h1>
+                <p class="text-muted">Your cursed stash — tap any item to view details.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container">
+        <div class="profile-shell">
+            <div class="profile-hero">
+                <div class="profile-tag">
+                    <span class="profile-user">{{ request.user.username }}</span>
+                    {% if profile and profile.is_verified %}
+                        <span class="profile-verified">Verified</span>
+                    {% endif %}
+                </div>
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <div class="profile-stat-number">{{ inventory_items|length }}</div>
+                        <div class="profile-stat-label">Items</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-number">Inventory</div>
+                        <div class="profile-stat-label">Only</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if inventory_items %}
+                <div class="profile-grid">
+                    {% for entry in inventory_items %}
+                        <a href="{{ entry.item.get_absolute_url }}" class="profile-inv-card">
+                            <div class="profile-inv-image">
+                                {% if entry.item.image_url %}
+                                    <img src="{{ entry.item.image_url }}" alt="{{ entry.item.name }}">
+                                {% else %}
+                                    <div class="profile-inv-noimg">No image</div>
+                                {% endif %}
+                                <div class="profile-inv-qty">x{{ entry.quantity }}</div>
+                                <form method="post" action="{% url 'values:inventory_remove' entry.pk %}" class="profile-inv-remove-overlay" onclick="event.stopPropagation();">
+                                    {% csrf_token %}
+                                    <button type="submit" class="profile-inv-remove-x" aria-label="Remove item">×</button>
+                                </form>
+                            </div>
+                            <div class="profile-inv-body">
+                                <div class="profile-inv-name">{{ entry.item.name }}</div>
+                                <div class="profile-inv-meta">
+                                    <span class="profile-inv-badge rarity-{{ entry.item.rarity }}">{{ entry.item.get_rarity_display }}</span>
+                                    <span class="profile-inv-badge">{{ entry.item.category.name }}</span>
+                                </div>
+                                <div class="profile-inv-value">
+                                    <span>Value</span>
+                                    <strong>{{ entry.item.value }}</strong>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="info-card">
+                    <p class="info-section-text text-muted">
+                        No items yet. Visit an item page and use “Add to Inventory” to start building your stash.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

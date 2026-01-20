@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Login - Jujutsu Infinite Values{% endblock %}
+{% block title %}Register - Jujutsu Infinite Values{% endblock %}
 
 {% block content %}
 <div class="login-page">
@@ -17,48 +17,85 @@
                     <div class="login-icon">
                         <span class="cursed-icon">呪</span>
                     </div>
-                    <h1 class="login-title">SORCERER LOGIN</h1>
-                    <p class="login-subtitle">Access the cursed energy database</p>
+                    <h1 class="login-title">SORCERER REGISTER</h1>
+                    <p class="login-subtitle">Forge your cursed contract</p>
                 </div>
 
                 {% if form.errors %}
                 <div class="login-alert">
                     <i class="bi bi-exclamation-triangle"></i>
-                    <span>Invalid credentials. Cursed energy signature not recognized.</span>
+                    <span>Something went wrong. Check the highlighted fields.</span>
                 </div>
                 {% endif %}
 
-                <form method="post" action="{% url 'values:login' %}" class="login-form">
+                <form method="post" action="{% url 'values:register' %}" class="login-form">
                     {% csrf_token %}
                     
                     <div class="form-group-cursed">
-                        <label for="id_username" class="form-label-cursed">
+                        <label for="{{ form.username.id_for_label }}" class="form-label-cursed">
                             <i class="bi bi-person"></i>
                             <span>Username</span>
                         </label>
-                        <input type="text" 
-                               name="username" 
-                               id="id_username" 
-                               class="form-input-cursed" 
-                               required 
-                               autofocus
-                               placeholder="Enter your sorcerer name">
+                        {% if form.username.errors %}
+                            <div class="field-errors">{{ form.username.errors }}</div>
+                        {% endif %}
+                        <input type="text"
+                               name="{{ form.username.name }}"
+                               id="{{ form.username.id_for_label }}"
+                               value="{{ form.username.value|default_if_none:'' }}"
+                               class="form-input-cursed"
+                               required
+                               placeholder="Choose your sorcerer name">
                     </div>
 
                     <div class="form-group-cursed">
-                        <label for="id_password" class="form-label-cursed">
+                        <label for="{{ form.email.id_for_label }}" class="form-label-cursed">
+                            <i class="bi bi-envelope"></i>
+                            <span>Email</span>
+                        </label>
+                        {% if form.email.errors %}
+                            <div class="field-errors">{{ form.email.errors }}</div>
+                        {% endif %}
+                        <input type="email"
+                               name="{{ form.email.name }}"
+                               id="{{ form.email.id_for_label }}"
+                               value="{{ form.email.value|default_if_none:'' }}"
+                               class="form-input-cursed"
+                               required
+                               placeholder="For verification only">
+                    </div>
+
+                    <div class="form-group-cursed">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label-cursed">
                             <i class="bi bi-lock"></i>
                             <span>Password</span>
                         </label>
-                        <input type="password" 
-                               name="password" 
-                               id="id_password" 
-                               class="form-input-cursed" 
+                        {% if form.password1.errors %}
+                            <div class="field-errors">{{ form.password1.errors }}</div>
+                        {% endif %}
+                        <input type="password"
+                               name="{{ form.password1.name }}"
+                               id="{{ form.password1.id_for_label }}"
+                               class="form-input-cursed"
                                required
-                               placeholder="Enter your cursed technique">
+                               placeholder="Choose a strong binding vow">
                     </div>
 
-                    <input type="hidden" name="next" value="{{ next }}">
+                    <div class="form-group-cursed">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label-cursed">
+                            <i class="bi bi-shield-lock"></i>
+                            <span>Confirm Password</span>
+                        </label>
+                        {% if form.password2.errors %}
+                            <div class="field-errors">{{ form.password2.errors }}</div>
+                        {% endif %}
+                        <input type="password"
+                               name="{{ form.password2.name }}"
+                               id="{{ form.password2.id_for_label }}"
+                               class="form-input-cursed"
+                               required
+                               placeholder="Repeat your binding vow">
+                    </div>
 
                     <button type="submit" class="btn-login-cursed">
                         <span>ACTIVATE</span>
@@ -68,9 +105,9 @@
 
                 <div class="login-footer">
                     <div class="mb-2">
-                        <span class="text-muted small">New sorcerer?</span>
-                        <a href="{% url 'values:register' %}" class="back-link-cursed ms-1">
-                            <span>Register</span>
+                        <span class="text-muted small">Already registered?</span>
+                        <a href="{% url 'values:login' %}" class="back-link-cursed ms-1">
+                            <span>Login</span>
                         </a>
                     </div>
                     <a href="{% url 'values:landing' %}" class="back-link-cursed">
@@ -84,6 +121,7 @@
 </div>
 
 <style>
+/* Login page styles (copied to ensure Register matches Login 1:1) */
 .login-page {
     position: relative;
     padding: 2rem 0;
@@ -339,14 +377,31 @@
     .login-card {
         padding: 2rem 1.5rem;
     }
-    
+
     .login-title {
         font-size: 1.5rem;
     }
-    
+
     .cursed-icon {
         font-size: 3rem;
     }
 }
+
+/* Minimal error styling */
+.field-errors {
+    margin-top: 0.5rem;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.field-errors ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+.field-errors li {
+    margin: 0.15rem 0;
+}
 </style>
 {% endblock %}
+

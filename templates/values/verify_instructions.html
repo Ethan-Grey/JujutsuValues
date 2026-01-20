@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Account - Jujutsu Infinite Values{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-background">
+        <div class="login-gradient"></div>
+        <div class="login-pattern"></div>
+    </div>
+
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 200px);">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-icon">
+                        <span class="cursed-icon">呪</span>
+                    </div>
+                    <h1 class="login-title">VERIFY SIGNATURE</h1>
+                    <p class="login-subtitle">One last step before you can channel cursed energy.</p>
+                </div>
+
+                <div class="info-section">
+                    <p class="info-section-text">
+                        Your account for <strong>{{ new_user.username }}</strong> has been created.
+                        To activate it, open the verification link below. In production this would be
+                        sent by email, but for now you can just click it directly:
+                    </p>
+                </div>
+
+                <div class="info-section">
+                    <a href="{{ verify_url }}" class="back-link-cursed">
+                        <i class="bi bi-link-45deg"></i>
+                        <span>Activate my account</span>
+                    </a>
+                </div>
+
+                <div class="login-footer">
+                    <a href="{% url 'values:landing' %}" class="back-link-cursed">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Return to Home</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

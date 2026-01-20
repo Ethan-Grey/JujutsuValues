@@ -24,6 +24,5 @@ urlpatterns = [
     path('', include('values.urls', namespace='values')),
 ]
 
-# Serve media files in both development and production
-# For production, consider using a CDN or storage service like S3
+# Serve media files (development and simple production setup)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

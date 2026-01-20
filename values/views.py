@@ -3,14 +3,22 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
-from django.views.generic import DetailView, ListView, TemplateView, CreateView, UpdateView
+from django.urls import reverse, reverse_lazy
+from django.views.generic import (
+    DetailView,
+    ListView,
+    TemplateView,
+    CreateView,
+    UpdateView,
+    FormView,
+)
 from django.views.decorators.http import require_http_methods
+import json
 
-from .forms import ItemForm
-from .models import Category, Item
+from .forms import ItemForm, UserRegistrationForm
+from .models import Category, Item, InventoryItem, SavedTrade, VerificationToken, Profile
 
 
 def is_admin(user):
@@ -186,6 +194,81 @@ class CustomLoginView(LoginView):
 def logout_view(request):
     logout(request)
     return redirect('values:landing')
+
+
+class RegistrationView(FormView):
+    template_name = "values/register.html"
+    form_class = UserRegistrationForm
+
+    def form_valid(self, form):
+        user = form.save(commit=True)
+        login(self.request, user)
+        return redirect("values:profile")
+
+
+@require_http_methods(["GET"])
+def verify_account(request, token):
+    try:
+        vt = VerificationToken.objects.select_related("user").get(token=token, is_used=False)
+    except VerificationToken.DoesNotExist:
+        return render(request, "values/verify_invalid.html", status=400)
+
+    user = vt.user
+    user.is_active = True
+    user.save()
+
+    profile = getattr(user, "profile", None)
+    if profile:
+        profile.is_verified = True
+        profile.save()
+
+    vt.is_used = True
+    vt.save()
+
+    return render(request, "values/verify_complete.html", {"verified_user": user})
+
+
+@login_required
+def profile_view(request):
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    inventory = (
+        InventoryItem.objects.filter(user=request.user)
+        .select_related("item", "item__category")
+        .order_by("-added_at")
+    )
+    return render(
+        request,
+        "values/profile.html",
+        {"profile": profile, "inventory_items": inventory},
+    )
+
+
+@login_required
+@require_http_methods(["POST"])
+def add_to_inventory(request, slug):
+    item = get_object_or_404(Item, slug=slug)
+    qty = 1
+    try:
+        if "quantity" in request.POST:
+            qty = max(1, int(request.POST.get("quantity", "1")))
+    except ValueError:
+        qty = 1
+
+    inv, created = InventoryItem.objects.get_or_create(user=request.user, item=item)
+    inv.quantity += qty if not created else max(qty, 1)
+    inv.save()
+    return redirect(item.get_absolute_url())
+
+
+@login_required
+@require_http_methods(["POST"])
+def remove_inventory_item(request, pk):
+    inv = get_object_or_404(InventoryItem, pk=pk, user=request.user)
+    inv.delete()
+    return redirect("values:profile")
+
+
+ # Saved trade calculator feature removed per request.
 
 
 class AdminRequiredMixin(UserPassesTestMixin):

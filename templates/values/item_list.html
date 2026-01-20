@@ -18,8 +18,8 @@
             </a>
             {% endif %}
         </div>
-    </div>
-</div>
+                            </div>
+                        </div>
 
 <div class="page-body">
     <div class="container">
@@ -35,7 +35,7 @@
                     </button>
                 </div>
             </form>
-        </div>
+            </div>
 
         <!-- Results Count -->
         <div class="results-header">
@@ -43,21 +43,21 @@
         </div>
 
         <!-- Items Grid -->
-        {% if items %}
+    {% if items %}
         <div class="items-grid">
             {% for item in items %}
             <div class="item-card-wrapper">
                 <a href="{{ item.get_absolute_url }}" class="item-card-link">
                     <div class="item-card">
-                        {% if item.image_url %}
+                    {% if item.image_url %}
                         <div class="item-card-image">
                             <img src="{{ item.image_url }}" alt="{{ item.name }}">
                         </div>
                         {% else %}
                         <div class="item-card-image no-image">
                             <i class="bi bi-image"></i>
-                        </div>
-                        {% endif %}
+                    </div>
+                    {% endif %}
                         <div class="item-card-body">
                             <div class="item-card-header">
                                 <span class="item-type-tag">{{ item.get_item_type_display }}</span>
@@ -72,8 +72,8 @@
                                             <i class="bi bi-star-fill {% if forloop.counter <= star_count %}star-active{% else %}star-inactive{% endif %}"></i>
                                         {% endfor %}
                                     {% endwith %}
-                                </div>
-                            </div>
+                        </div>
+                        </div>
                         </div>
                     </div>
                 </a>
@@ -118,14 +118,14 @@
             </nav>
         </div>
         {% endif %}
-        {% else %}
+    {% else %}
         <div class="empty-state">
             <i class="bi bi-inbox"></i>
             <h3>No items found</h3>
             <p>Try adjusting your search or filters</p>
             <a href="{% url 'values:item_list' %}" class="btn-outline">Clear Filters</a>
         </div>
-        {% endif %}
+    {% endif %}
     </div>
 </div>
 

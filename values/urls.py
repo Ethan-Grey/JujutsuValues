@@ -8,8 +8,13 @@ from .views import (
     LandingPageView,
     TradeCalculatorView,
     CustomLoginView,
+    RegistrationView,
+    profile_view,
     api_items_list,
     logout_view,
+    verify_account,
+    add_to_inventory,
+    remove_inventory_item,
 )
 
 app_name = "values"
@@ -21,8 +26,14 @@ urlpatterns = [
     path("api/items/", api_items_list, name="api_items_list"),
     path("login/", CustomLoginView.as_view(), name="login"),
     path("logout/", logout_view, name="logout"),
+    path("register/", RegistrationView.as_view(), name="register"),
+    path("verify/<str:token>/", verify_account, name="verify"),
+    path("profile/", profile_view, name="profile"),
+    path("profile/inventory/add/<slug:slug>/", add_to_inventory, name="inventory_add"),
+    path("profile/inventory/remove/<int:pk>/", remove_inventory_item, name="inventory_remove"),
     path("items/create/", ItemCreateView.as_view(), name="item_create"),
     path("items/<slug:slug>/edit/", ItemUpdateView.as_view(), name="item_edit"),
     path("<slug:slug>/", ItemDetailView.as_view(), name="item_detail"),
 ]
 
+ 

@@ -1,5 +1,9 @@
 from django.db import models
 from django.utils.text import slugify
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+import uuid
 
 
 class Category(models.Model):
@@ -90,4 +94,66 @@ class Item(models.Model):
         # Convert 1-10 demand to 1-5 stars
         return min(5, max(1, (self.demand + 1) // 2))
 
-# Create your models here.
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    display_name = models.CharField(max_length=150, blank=True)
+    bio = models.TextField(blank=True)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.display_name or self.user.username
+
+
+class InventoryItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="inventory_items")
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="inventory_entries")
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "item")
+        ordering = ["-added_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.item.name} x{self.quantity}"
+
+
+class SavedTrade(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_trades")
+    created_at = models.DateTimeField(auto_now_add=True)
+    offer_items = models.JSONField()
+    request_items = models.JSONField()
+    offer_total = models.PositiveIntegerField(default=0)
+    request_total = models.PositiveIntegerField(default=0)
+    note = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Trade #{self.pk} by {self.user.username}"
+
+
+class VerificationToken(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="verification_token")
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Verification token for {self.user.username}"
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    # Ensure profile exists and stays in sync
+    Profile.objects.get_or_create(user=instance)

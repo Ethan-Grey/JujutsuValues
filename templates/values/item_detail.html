@@ -105,6 +105,18 @@
                             Added {{ item.created_at|date:"M d, Y" }}. Last updated {{ item.updated_at|date:"M d, Y H:i" }}.
                         </p>
                     </div>
+
+                    {% if user.is_authenticated %}
+                    <div class="info-section">
+                        <form method="post" action="{% url 'values:inventory_add' item.slug %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-create">
+                                <i class="bi bi-box-arrow-in-down"></i>
+                                <span>Add to Inventory</span>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
