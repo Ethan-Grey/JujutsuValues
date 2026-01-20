@@ -1,1 +1,1 @@
-web: gunicorn JJI.wsgi
+web: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn JJI.wsgi --bind 0.0.0.0:$PORT
