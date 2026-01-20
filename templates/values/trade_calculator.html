@@ -12,10 +12,10 @@
         </div>
 
         <div class="trade-wrapper">
-            <!-- Left Side - Offer -->
+            <!-- Left Side - My Offer -->
             <div class="trade-column">
                 <div class="column-header">
-                    <h2 class="column-title">Your Offer</h2>
+                    <h2 class="column-title">My Offer</h2>
                     <div class="column-total">
                         <span>Total: </span>
                         <span class="total-amount" id="offerTotal">0</span>
@@ -30,17 +30,19 @@
                 </button>
             </div>
 
-            <!-- Center - VS -->
+            <!-- Center - Difference -->
             <div class="vs-section">
-                <div class="vs-line-top"></div>
-                <div class="vs-badge">VS</div>
-                <div class="vs-line-bottom"></div>
+                <div class="difference-display">
+                    <div class="difference-label">Trade Difference</div>
+                    <div class="difference-value" id="differenceValue">0</div>
+                    <div class="difference-favor" id="differenceFavor">Fair Trade</div>
+                </div>
             </div>
 
-            <!-- Right Side - Request -->
+            <!-- Right Side - Their Offer -->
             <div class="trade-column">
                 <div class="column-header">
-                    <h2 class="column-title">Their Request</h2>
+                    <h2 class="column-title">Their Offer</h2>
                     <div class="column-total">
                         <span>Total: </span>
                         <span class="total-amount" id="requestTotal">0</span>
@@ -55,34 +57,18 @@
                 </button>
             </div>
         </div>
-
-        <!-- Summary -->
-        <div class="trade-summary">
-            <div class="summary-row">
-                <span class="summary-label">Offer:</span>
-                <span class="summary-number" id="summaryOffer">0</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Request:</span>
-                <span class="summary-number" id="summaryRequest">0</span>
-            </div>
-            <div class="summary-row summary-diff">
-                <span class="summary-label">Difference:</span>
-                <span class="summary-number" id="summaryDiff">0</span>
-            </div>
-        </div>
     </div>
 </div>
 
 <!-- Simple Item Selection Modal -->
-<div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+<div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-full-height">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="itemModalLabel">Select Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body modal-body-fixed">
                 <!-- Filters -->
                 <div class="mb-3">
                     <div class="row g-2">
@@ -126,7 +112,7 @@
                 </div>
                 
                 <!-- Items List -->
-                <div style="max-height: 400px; overflow-y: auto;">
+                <div class="modal-items-scroll">
                     <div id="modalItemsList"></div>
                     <div id="modalLoading" class="text-center py-5">
                         <div class="spinner-border text-danger" role="status">
@@ -148,5 +134,8 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'js/trade_calculator.js' %}"></script>
 {% endblock %}

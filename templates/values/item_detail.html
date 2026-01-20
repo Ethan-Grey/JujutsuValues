@@ -117,6 +117,15 @@
                         </form>
                     </div>
                     {% endif %}
+
+                    {% if is_value_reviewer %}
+                    <div class="info-section">
+                        <a href="{% url 'values:request_value_change' item.slug %}" class="btn-create" style="background: var(--warning);">
+                            <i class="bi bi-pencil-square"></i>
+                            <span>Request Value Change</span>
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

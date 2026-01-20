@@ -671,6 +671,64 @@ body {
     color: var(--accent);
 }
 
+/* Admin Menu Dropdown */
+.admin-menu {
+    position: relative;
+}
+
+.admin-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem;
+    min-width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s;
+    z-index: 1000;
+}
+
+.admin-menu.active .admin-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.admin-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.admin-dropdown a:hover {
+    background: var(--bg-tertiary);
+    color: var(--accent);
+}
+
+.admin-dropdown a i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
 /* ============================================
    MAIN CONTENT
    ============================================ */
@@ -2049,6 +2107,41 @@ body {
     gap: 1rem;
     padding: 2rem 1rem;
     align-self: stretch;
+    min-width: 200px;
+}
+
+.difference-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+}
+
+.difference-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.difference-value {
+    font-size: 2rem;
+    font-weight: 900;
+    font-family: 'Orbitron', sans-serif;
+    text-shadow: 0 0 10px currentColor;
+}
+
+.difference-favor {
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .vs-line-top,
@@ -2210,10 +2303,14 @@ body {
     background: var(--bg-secondary);
     border: 2px solid var(--accent);
     color: var(--text-primary);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 .modal-title {
@@ -2222,12 +2319,42 @@ body {
     font-weight: 700;
 }
 
+.modal-body-fixed {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.modal-items-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 400px;
+    max-height: 60vh;
+}
+
 .modal-footer {
     border-top: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
 .btn-close {
     filter: invert(1);
+}
+
+.modal-full-height {
+    max-height: 90vh;
+}
+
+.modal-full-height .modal-content {
+    height: 90vh;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
 }
 
 .form-control,

@@ -15,6 +15,11 @@ from .views import (
     verify_account,
     add_to_inventory,
     remove_inventory_item,
+    request_value_change,
+    value_requests_list,
+    admin_value_requests,
+    approve_value_request,
+    reject_value_request,
 )
 
 app_name = "values"
@@ -33,6 +38,11 @@ urlpatterns = [
     path("profile/inventory/remove/<int:pk>/", remove_inventory_item, name="inventory_remove"),
     path("items/create/", ItemCreateView.as_view(), name="item_create"),
     path("items/<slug:slug>/edit/", ItemUpdateView.as_view(), name="item_edit"),
+    path("items/<slug:slug>/request-value-change/", request_value_change, name="request_value_change"),
+    path("value-requests/", value_requests_list, name="value_requests"),
+    path("manage/value-requests/", admin_value_requests, name="admin_value_requests"),
+    path("manage/value-requests/<int:pk>/approve/", approve_value_request, name="approve_value_request"),
+    path("manage/value-requests/<int:pk>/reject/", reject_value_request, name="reject_value_request"),
     path("<slug:slug>/", ItemDetailView.as_view(), name="item_detail"),
 ]
 

@@ -1,4 +1,5 @@
 {% load static %}
+{% load user_tags %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -49,13 +50,37 @@
             
             <div class="nav-actions">
                 {% if user.is_authenticated %}
-                    {% if user.is_staff %}
-                        <a href="{% url 'values:item_create' %}" class="btn-nav btn-nav-primary">
-                            Create
-                        </a>
-                        <a href="/admin/" class="btn-nav">
-                            Admin
-                        </a>
+                    {% if user.is_staff or user.is_superuser or user|is_value_reviewer %}
+                        <div class="admin-menu">
+                            <button class="btn-nav admin-btn">
+                                <i class="bi bi-gear-fill"></i>
+                                <span>Admin</span>
+                                <i class="bi bi-chevron-down ms-1"></i>
+                            </button>
+                            <div class="admin-dropdown">
+                                {% if user.is_staff %}
+                                    <a href="{% url 'values:item_create' %}">
+                                        <i class="bi bi-plus-circle"></i>
+                                        <span>Create Item</span>
+                                    </a>
+                                    <a href="/admin/">
+                                        <i class="bi bi-shield-lock"></i>
+                                        <span>Django Admin</span>
+                                    </a>
+                                {% endif %}
+                                {% if user.is_superuser %}
+                                    <a href="{% url 'values:admin_value_requests' %}">
+                                        <i class="bi bi-clipboard-check"></i>
+                                        <span>Manage Value Requests</span>
+                                    </a>
+                                {% elif user|is_value_reviewer %}
+                                    <a href="{% url 'values:value_requests' %}">
+                                        <i class="bi bi-list-check"></i>
+                                        <span>My Value Requests</span>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
                     {% endif %}
                     <div class="user-menu">
                         <button class="btn-nav user-btn">
@@ -92,7 +117,7 @@
                 <span class="brand-icon">呪</span>
                 <span>JJI Values</span>
             </div>
-            <p class="footer-text">Community-driven value reference for Jujutsu Infinite trades</p>
+            <p class="footer-text">Community-driven value reference for Jujutsu Infinite trades. Owned by Reythh</p>
         </div>
         <div class="footer-links">
             <a href="{% url 'values:item_list' %}">Browse Items</a>
@@ -146,6 +171,29 @@
             document.querySelector('.user-menu').classList.toggle('active');
         });
     }
+    
+    // Admin menu
+    const adminBtn = document.querySelector('.admin-btn');
+    if (adminBtn) {
+        adminBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelector('.admin-menu').classList.toggle('active');
+        });
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.admin-menu')) {
+            document.querySelectorAll('.admin-menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
+        }
+        if (!e.target.closest('.user-menu')) {
+            document.querySelectorAll('.user-menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
+        }
+    });
 </script>
 {% block extra_js %}{% endblock %}
 </body>

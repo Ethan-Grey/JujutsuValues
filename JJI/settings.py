@@ -25,6 +25,19 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
+# CSRF Trusted Origins - required for CSRF protection on deployed sites
+# Can be set via CSRF_TRUSTED_ORIGINS env var (comma-separated), or defaults to Railway domain
+if os.environ.get("CSRF_TRUSTED_ORIGINS"):
+    CSRF_TRUSTED_ORIGINS = [
+        origin.strip()
+        for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        "https://jujutsuvalues-production.up.railway.app",
+    ]
+
 # --------------------------------------------------
 # APPLICATIONS
 # --------------------------------------------------

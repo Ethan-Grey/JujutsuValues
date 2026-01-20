@@ -122,7 +122,10 @@
                                 <span>Image URL</span>
                             </label>
                             {{ form.image_url }}
-                            <small class="form-hint">Example: /media/Weapons/Heian_Gauntlet.png</small>
+                            <small class="form-hint">
+                                For deployed sites: Use full URL (https://example.com/image.png) or upload to Railway static files.<br>
+                                For local: Use /media/Weapons/Item.png (files go in JJI/media/)
+                            </small>
                             {% if form.image_url.errors %}
                                 <div class="form-error">{{ form.image_url.errors }}</div>
                             {% endif %}

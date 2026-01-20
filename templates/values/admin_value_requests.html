@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Manage Value Requests - Jujutsu Infinite Values{% endblock %}
+
+{% block content %}
+<div class="page-header-section">
+    <div class="container">
+        <div class="page-header-content">
+            <div>
+                <h1 class="page-title-large">Manage Value Requests</h1>
+                <p class="text-muted">Review and approve/reject value change requests</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container">
+        <!-- Status Filter -->
+        <div class="info-card mb-4">
+            <div class="d-flex gap-3 flex-wrap">
+                <a href="?status=all" class="btn-create {% if status_filter == 'all' %}active{% endif %}" style="background: {% if status_filter == 'all' %}var(--accent){% else %}var(--bg-tertiary){% endif %};">
+                    <span>All</span>
+                </a>
+                <a href="?status=pending" class="btn-create {% if status_filter == 'pending' %}active{% endif %}" style="background: {% if status_filter == 'pending' %}var(--warning){% else %}var(--bg-tertiary){% endif %};">
+                    <span>Pending</span>
+                </a>
+                <a href="?status=approved" class="btn-create {% if status_filter == 'approved' %}active{% endif %}" style="background: {% if status_filter == 'approved' %}var(--success){% else %}var(--bg-tertiary){% endif %};">
+                    <span>Approved</span>
+                </a>
+                <a href="?status=rejected" class="btn-create {% if status_filter == 'rejected' %}active{% endif %}" style="background: {% if status_filter == 'rejected' %}var(--danger){% else %}var(--bg-tertiary){% endif %};">
+                    <span>Rejected</span>
+                </a>
+            </div>
+        </div>
+
+        {% if requests %}
+            <div class="row g-4">
+                {% for request in requests %}
+                    <div class="col-lg-6">
+                        <div class="info-card">
+                            <div class="info-header">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h3 class="info-section-title mb-2">
+                                            <a href="{{ request.item.get_absolute_url }}" style="color: var(--text-primary); text-decoration: none;">
+                                                {{ request.item.name }}
+                                            </a>
+                                        </h3>
+                                        <div class="info-badges">
+                                            <span class="info-badge rarity-{{ request.item.rarity }}">{{ request.item.get_rarity_display }}</span>
+                                        </div>
+                                    </div>
+                                    <span class="info-badge 
+                                        {% if request.status == 'approved' %}bg-success
+                                        {% elif request.status == 'rejected' %}bg-danger
+                                        {% else %}bg-warning{% endif %}">
+                                        {{ request.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <div class="stat-row">
+                                    <span class="stat-label">Requested by</span>
+                                    <span class="stat-value">{{ request.requested_by.username }}</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Current Value</span>
+                                    <span class="stat-value">{{ request.current_value }}</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Requested Value</span>
+                                    <span class="stat-value-large">{{ request.requested_value }}</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Difference</span>
+                                    <span class="stat-value {% if request.requested_value > request.current_value %}text-success{% elif request.requested_value < request.current_value %}text-danger{% endif %}">
+                                        {% if request.requested_value > request.current_value %}+{% endif %}{{ request.requested_value|sub:request.current_value }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="info-section">
+                                <h4 class="info-section-title" style="font-size: 0.9rem;">Reason</h4>
+                                <p class="info-section-text">{{ request.reason }}</p>
+                            </div>
+
+                            {% if request.status == 'pending' %}
+                            <div class="info-section">
+                                <form method="post" action="{% url 'values:approve_value_request' request.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="approve_notes_{{ request.pk }}" class="form-label">Review Notes (Optional)</label>
+                                        <textarea name="review_notes" id="approve_notes_{{ request.pk }}" class="form-control" rows="2" placeholder="Add notes about this approval..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn-create" style="background: var(--success);">
+                                        <i class="bi bi-check-circle"></i>
+                                        <span>Approve</span>
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'values:reject_value_request' request.pk %}" class="d-inline ms-2">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="reject_notes_{{ request.pk }}" class="form-label">Review Notes (Optional)</label>
+                                        <textarea name="review_notes" id="reject_notes_{{ request.pk }}" class="form-control" rows="2" placeholder="Add notes about this rejection..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn-create" style="background: var(--danger);">
+                                        <i class="bi bi-x-circle"></i>
+                                        <span>Reject</span>
+                                    </button>
+                                </form>
+                            </div>
+                            {% elif request.review_notes %}
+                            <div class="info-section">
+                                <h4 class="info-section-title" style="font-size: 0.9rem;">Review Notes</h4>
+                                <p class="info-section-text">{{ request.review_notes }}</p>
+                            </div>
+                            {% endif %}
+
+                            <div class="info-section" style="border-top: none; padding-top: 0; margin-top: 0;">
+                                <p class="info-section-text" style="font-size: 0.85rem; color: var(--text-muted);">
+                                    Submitted {{ request.created_at|date:"M d, Y H:i" }}
+                                    {% if request.reviewed_at %}
+                                        • Reviewed {{ request.reviewed_at|date:"M d, Y H:i" }}
+                                        {% if request.reviewed_by %}
+                                            by {{ request.reviewed_by.username }}
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="info-card text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-muted);"></i>
+                <p class="text-muted mt-3">No value change requests found.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.info-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 2rem;
+    height: 100%;
+}
+
+.info-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.info-badges {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.info-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.bg-success {
+    background: var(--success);
+    color: white;
+}
+
+.bg-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.bg-warning {
+    background: var(--warning);
+    color: var(--bg-primary);
+}
+
+.info-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stat-value-large {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.text-success {
+    color: var(--success);
+}
+
+.text-danger {
+    color: var(--danger);
+}
+
+.info-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-section-text {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+}
+
+.form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

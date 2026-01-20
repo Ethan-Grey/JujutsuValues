@@ -17,12 +17,25 @@ from django.views.generic import (
 from django.views.decorators.http import require_http_methods
 import json
 
-from .forms import ItemForm, UserRegistrationForm
-from .models import Category, Item, InventoryItem, SavedTrade, VerificationToken, Profile
+from .forms import ItemForm, UserRegistrationForm, ValueChangeRequestForm
+from .models import Category, Item, InventoryItem, SavedTrade, VerificationToken, Profile, ValueChangeRequest
+from django.contrib.auth.models import Group
+from django.utils import timezone
 
 
 def is_admin(user):
     return user.is_authenticated and user.is_staff
+
+
+def is_value_reviewer(user):
+    """Check if user is in the Value Reviewers group"""
+    if not user.is_authenticated:
+        return False
+    try:
+        reviewers_group = Group.objects.get(name="Value Reviewers")
+        return reviewers_group in user.groups.all()
+    except Group.DoesNotExist:
+        return False
 
 
 class LandingPageView(TemplateView):
@@ -111,6 +124,7 @@ class ItemDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_admin'] = self.request.user.is_authenticated and self.request.user.is_staff
+        context['is_value_reviewer'] = is_value_reviewer(self.request.user)
         return context
 
 
@@ -302,5 +316,107 @@ class ItemUpdateView(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['title'] = f'Edit {self.object.name}'
         return context
+
+
+# Value Change Request Views
+
+class ValueReviewerRequiredMixin(UserPassesTestMixin):
+    """Mixin to require Value Reviewer group membership"""
+    login_url = 'values:login'
+
+    def test_func(self):
+        return is_value_reviewer(self.request.user)
+
+
+@login_required
+@user_passes_test(is_value_reviewer)
+def request_value_change(request, slug):
+    """Allow value reviewers to submit value change requests"""
+    item = get_object_or_404(Item, slug=slug)
+    
+    if request.method == 'POST':
+        form = ValueChangeRequestForm(request.POST)
+        if form.is_valid():
+            value_request = form.save(commit=False)
+            value_request.item = item
+            value_request.requested_by = request.user
+            value_request.current_value = item.value
+            value_request.save()
+            return redirect('values:value_requests')
+    else:
+        form = ValueChangeRequestForm(initial={'requested_value': item.value})
+    
+    return render(request, 'values/value_request_form.html', {
+        'form': form,
+        'item': item,
+    })
+
+
+@login_required
+@user_passes_test(is_value_reviewer)
+def value_requests_list(request):
+    """List all value change requests submitted by the current reviewer"""
+    requests = ValueChangeRequest.objects.filter(
+        requested_by=request.user
+    ).select_related('item', 'reviewed_by').order_by('-created_at')
+    
+    return render(request, 'values/value_requests_list.html', {
+        'requests': requests,
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_value_requests(request):
+    """Superuser view to manage all value change requests"""
+    status_filter = request.GET.get('status', 'pending')
+    requests = ValueChangeRequest.objects.select_related(
+        'item', 'requested_by', 'reviewed_by'
+    ).order_by('-created_at')
+    
+    if status_filter != 'all':
+        requests = requests.filter(status=status_filter)
+    
+    return render(request, 'values/admin_value_requests.html', {
+        'requests': requests,
+        'status_filter': status_filter,
+        'status_choices': ValueChangeRequest.Status.choices,
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(["POST"])
+def approve_value_request(request, pk):
+    """Superuser approves a value change request"""
+    value_request = get_object_or_404(ValueChangeRequest, pk=pk, status=ValueChangeRequest.Status.PENDING)
+    
+    value_request.status = ValueChangeRequest.Status.APPROVED
+    value_request.reviewed_by = request.user
+    value_request.reviewed_at = timezone.now()
+    value_request.review_notes = request.POST.get('review_notes', '')
+    value_request.save()
+    
+    # Update the item value
+    value_request.item.value = value_request.requested_value
+    value_request.item.save()
+    
+    return redirect('values:admin_value_requests')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@require_http_methods(["POST"])
+def reject_value_request(request, pk):
+    """Superuser rejects a value change request"""
+    value_request = get_object_or_404(ValueChangeRequest, pk=pk, status=ValueChangeRequest.Status.PENDING)
+    
+    value_request.status = ValueChangeRequest.Status.REJECTED
+    value_request.reviewed_by = request.user
+    value_request.reviewed_at = timezone.now()
+    value_request.review_notes = request.POST.get('review_notes', '')
+    value_request.save()
+    
+    return redirect('values:admin_value_requests')
 
 # Create your views here.

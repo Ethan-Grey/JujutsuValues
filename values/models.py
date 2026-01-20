@@ -157,3 +157,36 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     # Ensure profile exists and stays in sync
     Profile.objects.get_or_create(user=instance)
+
+
+class ValueChangeRequest(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="value_change_requests")
+    requested_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="value_change_requests")
+    current_value = models.PositiveIntegerField(help_text="Current value of the item")
+    requested_value = models.PositiveIntegerField(help_text="Requested new value")
+    reason = models.TextField(help_text="Reason for the value change request")
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_value_changes",
+        help_text="Superuser who reviewed this request"
+    )
+    review_notes = models.TextField(blank=True, help_text="Admin notes on approval/rejection")
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Value Change Request"
+        verbose_name_plural = "Value Change Requests"
+
+    def __str__(self):
+        return f"{self.item.name}: {self.current_value} → {self.requested_value} ({self.get_status_display()})"

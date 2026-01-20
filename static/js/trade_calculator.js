@@ -16,9 +16,21 @@
     function init() {
         console.log('Trade calculator initializing...');
         
+        // Wait for Bootstrap to be available
+        if (typeof bootstrap === 'undefined') {
+            console.warn('Bootstrap not loaded yet, retrying...');
+            setTimeout(init, 100);
+            return;
+        }
+        
         // Setup add buttons
-        document.querySelectorAll('.add-item-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+        const addButtons = document.querySelectorAll('.add-item-btn');
+        console.log('Found', addButtons.length, 'add buttons');
+        
+        addButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 state.currentSide = this.getAttribute('data-side');
                 state.selectedItem = null;
                 console.log('Opening modal for side:', state.currentSide);
@@ -78,8 +90,26 @@
             return;
         }
         
-        const modal = new bootstrap.Modal(modalEl);
+        // Get existing modal instance or create new one
+        let modal = bootstrap.Modal.getInstance(modalEl);
+        if (!modal) {
+            modal = new bootstrap.Modal(modalEl, {
+                backdrop: 'static',
+                keyboard: true
+            });
+        }
+        
+        // Prevent body scroll
+        document.body.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
+        
         modal.show();
+        
+        // Remove body scroll lock when modal is hidden
+        modalEl.addEventListener('hidden.bs.modal', function() {
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+        }, { once: true });
     }
     
     function resetModal() {
@@ -286,40 +316,49 @@
     }
     
     function updateTotals() {
-        let offerTotal = 0;
-        let requestTotal = 0;
+        let myOfferTotal = 0;
+        let theirOfferTotal = 0;
         
         state.items.offer.forEach(item => {
-            offerTotal += item.value * item.quantity;
+            myOfferTotal += item.value * item.quantity;
         });
         
         state.items.request.forEach(item => {
-            requestTotal += item.value * item.quantity;
+            theirOfferTotal += item.value * item.quantity;
         });
         
         const offerEl = document.getElementById('offerTotal');
         const requestEl = document.getElementById('requestTotal');
-        if (offerEl) offerEl.textContent = formatValue(offerTotal);
-        if (requestEl) requestEl.textContent = formatValue(requestTotal);
+        if (offerEl) offerEl.textContent = formatValue(myOfferTotal);
+        if (requestEl) requestEl.textContent = formatValue(theirOfferTotal);
         
-        const summaryOffer = document.getElementById('summaryOffer');
-        const summaryRequest = document.getElementById('summaryRequest');
-        const summaryDiff = document.getElementById('summaryDiff');
+        // Update difference display in center
+        // If My Offer > Their Offer: negative (overpaying, in their favor)
+        // If Their Offer > My Offer: positive (they're paying more, in your favor)
+        const differenceValue = document.getElementById('differenceValue');
+        const differenceFavor = document.getElementById('differenceFavor');
         
-        if (summaryOffer) summaryOffer.textContent = formatValue(offerTotal);
-        if (summaryRequest) summaryRequest.textContent = formatValue(requestTotal);
-        
-        if (summaryDiff) {
-            const diff = offerTotal - requestTotal;
+        if (differenceValue && differenceFavor) {
+            const diff = myOfferTotal - theirOfferTotal;
+            
             if (diff > 0) {
-                summaryDiff.textContent = '+' + formatValue(diff);
-                summaryDiff.style.color = 'var(--success)';
+                // My offer is greater - I'm overpaying (in their favor)
+                differenceValue.textContent = '-' + formatValue(diff);
+                differenceValue.style.color = 'var(--danger)';
+                differenceFavor.textContent = 'In Their Favor';
+                differenceFavor.style.color = 'var(--danger)';
             } else if (diff < 0) {
-                summaryDiff.textContent = '-' + formatValue(Math.abs(diff));
-                summaryDiff.style.color = 'var(--danger)';
+                // Their offer is greater - they're paying more (in your favor)
+                differenceValue.textContent = '+' + formatValue(Math.abs(diff));
+                differenceValue.style.color = 'var(--success)';
+                differenceFavor.textContent = 'In Your Favor';
+                differenceFavor.style.color = 'var(--success)';
             } else {
-                summaryDiff.textContent = '0';
-                summaryDiff.style.color = 'var(--text-primary)';
+                // Fair trade
+                differenceValue.textContent = '0';
+                differenceValue.style.color = 'var(--text-primary)';
+                differenceFavor.textContent = 'Fair Trade';
+                differenceFavor.style.color = 'var(--text-secondary)';
             }
         }
     }
@@ -337,10 +376,18 @@
         return div.innerHTML;
     }
     
-    // Start when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
+    // Start when DOM is ready and Bootstrap is loaded
+    function start() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                // Wait a bit for Bootstrap to be fully loaded
+                setTimeout(init, 100);
+            });
+        } else {
+            // DOM is ready, wait for Bootstrap
+            setTimeout(init, 100);
+        }
     }
+    
+    start();
 })();

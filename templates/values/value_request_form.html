@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Request Value Change - Jujutsu Infinite Values{% endblock %}
+
+{% block content %}
+<div class="page-header-section">
+    <div class="container">
+        <div class="page-header-content">
+            <div>
+                <a href="{{ item.get_absolute_url }}" class="back-link">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to {{ item.name }}</span>
+                </a>
+                <h1 class="page-title-large">Request Value Change</h1>
+                <p class="text-muted">Submit a request to change the value of {{ item.name }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="info-card">
+                    <div class="info-header">
+                        <div class="info-badges">
+                            <span class="info-badge rarity-{{ item.rarity }}">{{ item.get_rarity_display }}</span>
+                            <span class="info-badge type-badge">{{ item.get_item_type_display }}</span>
+                        </div>
+                        <div class="info-category">{{ item.category.name }}</div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="stat-row">
+                            <span class="stat-label">Current Value</span>
+                            <span class="stat-value-large">{{ item.value|floatformat:0 }}</span>
+                        </div>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.requested_value.id_for_label }}" class="form-label">
+                                {{ form.requested_value.label }}
+                            </label>
+                            {{ form.requested_value }}
+                            {% if form.requested_value.errors %}
+                                <div class="text-danger small mt-1">{{ form.requested_value.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.reason.id_for_label }}" class="form-label">
+                                {{ form.reason.label }}
+                            </label>
+                            {{ form.reason }}
+                            {% if form.reason.errors %}
+                                <div class="text-danger small mt-1">{{ form.reason.errors }}</div>
+                            {% endif %}
+                            <div class="form-text text-muted">
+                                Provide a detailed explanation for why this value should be changed.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn-create">
+                                <i class="bi bi-send"></i>
+                                <span>Submit Request</span>
+                            </button>
+                            <a href="{{ item.get_absolute_url }}" class="btn-create" style="background: var(--bg-tertiary);">
+                                <span>Cancel</span>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: var(--accent);
+}
+
+.form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.info-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 2rem;
+}
+
+.info-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.info-badges {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.info-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.type-badge {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.info-category {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.info-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.stat-value-large {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+</style>
+{% endblock %}

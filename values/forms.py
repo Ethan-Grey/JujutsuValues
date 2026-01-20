@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Item, Category
+from .models import Item, Category, ValueChangeRequest
 
 
 class ItemForm(forms.ModelForm):
@@ -33,7 +33,7 @@ class ItemForm(forms.ModelForm):
             "is_limited": forms.CheckboxInput(attrs={}),
             "featured": forms.CheckboxInput(attrs={}),
             "obtained_from": forms.TextInput(attrs={}),
-            "image_url": forms.URLInput(attrs={"placeholder": "/media/Weapons/Item.png"}),
+            "image_url": forms.URLInput(attrs={"placeholder": "https://example.com/image.png or /media/Weapons/Item.png"}),
             "notes": forms.Textarea(attrs={"rows": 4}),
         }
 
@@ -55,3 +55,17 @@ class UserRegistrationForm(UserCreationForm):
         for field_name in ["username", "email", "password1", "password2"]:
             if field_name in self.fields:
                 self.fields[field_name].help_text = ""
+
+
+class ValueChangeRequestForm(forms.ModelForm):
+    class Meta:
+        model = ValueChangeRequest
+        fields = ["requested_value", "reason"]
+        widgets = {
+            "requested_value": forms.NumberInput(attrs={"min": 1, "class": "form-control"}),
+            "reason": forms.Textarea(attrs={"rows": 5, "class": "form-control", "placeholder": "Explain why this value should be changed..."}),
+        }
+        labels = {
+            "requested_value": "New Value",
+            "reason": "Reason for Change",
+        }
