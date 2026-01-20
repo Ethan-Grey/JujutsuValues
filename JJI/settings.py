@@ -126,7 +126,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Use simpler WhiteNoise storage that doesn't require manifest
+# WhiteNoise configuration for serving static files
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # --------------------------------------------------
