@@ -1,1 +1,1 @@
-web: gunicorn JujutsuValues.wsgi
+web: gunicorn JJI.wsgi
