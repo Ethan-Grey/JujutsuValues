@@ -1,16 +1,4 @@
-[phases.setup]
-nixPkgs = ["python313", "python313Packages.pip"]
-
 [phases.install]
 cmds = [
-  "pip install --upgrade pip",
   "pip install -r requirements.txt"
 ]
-
-[phases.build]
-cmds = [
-  "python manage.py collectstatic --noinput --clear"
-]
-
-[start]
-cmd = "gunicorn JJI.wsgi --bind 0.0.0.0:$PORT"
