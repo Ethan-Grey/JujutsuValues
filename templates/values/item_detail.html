@@ -126,11 +126,54 @@
                         </a>
                     </div>
                     {% endif %}
+                    
+                    {% if is_admin %}
+                    <div class="info-section">
+                        <h3 class="info-section-title">Admin Actions</h3>
+                        <div class="admin-actions-grid">
+                            <a href="{% url 'values:item_edit' item.slug %}" class="btn-admin-action btn-edit">
+                                <i class="bi bi-pencil-fill"></i>
+                                <span>Edit Item</span>
+                            </a>
+                            <button type="button" class="btn-admin-action btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="bi bi-trash-fill"></i>
+                                <span>Delete Item</span>
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+{% if is_admin %}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ item.name }}</strong>?</p>
+                <p class="text-danger mb-0"><i class="bi bi-exclamation-triangle-fill"></i> This action cannot be undone!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'values:item_delete' item.slug %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash-fill"></i> Delete Item
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <style>
 .back-link {
@@ -317,6 +360,54 @@
     margin: 0;
 }
 
+.admin-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-admin-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: 1px solid #2563eb;
+}
+
+.btn-edit:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    color: white;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    border: 1px solid #b91c1c;
+}
+
+.btn-delete:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
 @media (max-width: 968px) {
     .item-detail-layout {
         grid-template-columns: 1fr;
@@ -324,6 +415,10 @@
     
     .item-detail-image-section {
         position: static;
+    }
+    
+    .admin-actions-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>

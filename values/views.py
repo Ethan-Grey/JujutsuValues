@@ -318,6 +318,18 @@ class ItemUpdateView(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
         return context
 
 
+@login_required
+@user_passes_test(is_admin)
+@require_http_methods(["POST"])
+def item_delete(request, slug):
+    """Delete an item (admin only)"""
+    item = get_object_or_404(Item, slug=slug)
+    item_name = item.name
+    item.delete()
+    return redirect('values:item_list')
+
+
+
 # Value Change Request Views
 
 class ValueReviewerRequiredMixin(UserPassesTestMixin):

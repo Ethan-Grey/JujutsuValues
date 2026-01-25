@@ -35,6 +35,19 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ("name", "notes", "obtained_from")
     prepopulated_fields = {"slug": ("name",)}
     ordering = ("-featured", "-value")
+    
+    def get_form(self, request, obj=None, **kwargs):
+        """Customize the form to make image_url not required"""
+        form = super().get_form(request, obj, **kwargs)
+        if 'image_url' in form.base_fields:
+            form.base_fields['image_url'].required = False
+            # Remove the "Enter a valid URL" help text
+            form.base_fields['image_url'].help_text = 'Optional: Image URL or path (e.g., /media/Weapons/Item.png)'
+        return form
+    
+    def has_delete_permission(self, request, obj=None):
+        """Allow staff and superusers to delete items"""
+        return request.user.is_staff or request.user.is_superuser
 
 
 @admin.register(ValueChangeRequest)

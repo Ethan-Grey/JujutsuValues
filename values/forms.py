@@ -33,13 +33,17 @@ class ItemForm(forms.ModelForm):
             "is_limited": forms.CheckboxInput(attrs={}),
             "featured": forms.CheckboxInput(attrs={}),
             "obtained_from": forms.TextInput(attrs={}),
-            "image_url": forms.URLInput(attrs={"placeholder": "https://example.com/image.png or /media/Weapons/Item.png"}),
+            "image_url": forms.TextInput(attrs={"placeholder": "https://example.com/image.png or /media/Weapons/Item.png"}),
             "notes": forms.Textarea(attrs={"rows": 4}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["category"].queryset = Category.objects.all().order_by("name")
+        # Make image_url optional so items can be saved without requiring a photo
+        self.fields["image_url"].required = False
+        # Replace the default "Enter a valid URL" help text with a more helpful message
+        self.fields["image_url"].help_text = "Optional: Image URL or path (e.g., /media/Weapons/Item.png)"
 
 
 class UserRegistrationForm(UserCreationForm):

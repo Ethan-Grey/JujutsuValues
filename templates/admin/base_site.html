@@ -5,6 +5,11 @@
 
 {% block branding %}
 <h1 id="site-name"><a href="{% url 'admin:index' %}">JJI Values Administration</a></h1>
+<div style="margin-top: 10px;">
+    <a href="{% url 'values:landing' %}" target="_blank" style="color: #79aec8; text-decoration: none; font-size: 14px;">
+        <span style="margin-right: 5px;">→</span>View Site
+    </a>
+</div>
 {% endblock %}
 
 {% block extrastyle %}

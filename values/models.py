@@ -68,7 +68,7 @@ class Item(models.Model):
     obtained_from = models.CharField(
         max_length=200, blank=True, help_text="Event, raid, or source"
     )
-    image_url = models.URLField(blank=True)
+    image_url = models.CharField(max_length=500, blank=True, help_text="Image URL or path (e.g., /media/Weapons/Item.png)")
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
