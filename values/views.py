@@ -72,6 +72,7 @@ class ItemListView(ListView):
         trend = self.request.GET.get("trend")
         min_value = self.request.GET.get("min_value")
         max_value = self.request.GET.get("max_value")
+        vow = self.request.GET.get("vow")
 
         if query:
             qs = qs.filter(
@@ -91,6 +92,24 @@ class ItemListView(ListView):
             qs = qs.filter(value__gte=int(min_value))
         if max_value and max_value.isdigit():
             qs = qs.filter(value__lte=int(max_value))
+        if vow:
+            if vow == "all":
+                qs = qs.filter(name__istartswith="Vow:")
+            else:
+                # Map vow slugs to actual vow names
+                vow_map = {
+                    "unbreakable": "Vow: Unbreakable",
+                    "snow-grave": "Vow: Snow Grave",
+                    "justice": "Vow: Justice",
+                    "impact": "Vow: Impact",
+                    "ceaseless-slashes": "Vow: Ceaseless Slashes",
+                    "blood-beam": "Vow: Blood Beam",
+                    "red-reflection": "Vow: Red Reflection",
+                    "spatial-pulverize": "Vow: Spatial Pulverize",
+                }
+                vow_name = vow_map.get(vow)
+                if vow_name:
+                    qs = qs.filter(name=vow_name)
 
         sort = self.request.GET.get("sort")
         if sort == "value_asc":

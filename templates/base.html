@@ -35,6 +35,7 @@
                 <li><a href="{% url 'values:item_list' %}?category=armor" class="nav-link-item">Armor</a></li>
                 <li><a href="{% url 'values:item_list' %}?category=titles" class="nav-link-item">Titles</a></li>
                 <li><a href="{% url 'values:item_list' %}?category=cursed-objects" class="nav-link-item">Cursed Objects</a></li>
+                <li><a href="{% url 'values:item_list' %}?vow=all" class="nav-link-item">Vows</a></li>
                 <li class="nav-dropdown">
                     <a href="#" class="nav-link-item">More <i class="bi bi-chevron-down ms-1"></i></a>
                     <ul class="dropdown-menu-nav">
@@ -96,9 +97,6 @@
                         Login
                     </a>
                 {% endif %}
-                <button id="themeToggle" class="btn-nav theme-toggle">
-                    <i class="bi bi-moon-fill"></i>
-                </button>
             </div>
         </div>
     </div>
@@ -132,28 +130,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Theme Toggle
-    (function() {
-        const body = document.body;
-        const stored = localStorage.getItem('theme');
-        if (stored === 'dark') body.classList.add('theme-dark');
-        
-        const btn = document.getElementById('themeToggle');
-        if (!btn) return;
-        
-        function updateIcon() {
-            const icon = btn.querySelector('i');
-            icon.className = body.classList.contains('theme-dark') ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
-        }
-        
-        btn.addEventListener('click', () => {
-            body.classList.toggle('theme-dark');
-            localStorage.setItem('theme', body.classList.contains('theme-dark') ? 'dark' : 'light');
-            updateIcon();
-        });
-        
-        updateIcon();
-    })();
     
     // Dropdown menus
     document.querySelectorAll('.nav-dropdown').forEach(dropdown => {

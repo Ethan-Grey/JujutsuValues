@@ -40,6 +40,9 @@ class ItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["category"].queryset = Category.objects.all().order_by("name")
+        # Make image_url optional when editing
+        if self.instance and self.instance.pk:
+            self.fields["image_url"].required = False
 
 
 class UserRegistrationForm(UserCreationForm):

@@ -93,7 +93,7 @@
                 <ul class="pagination">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if active_filters.q %}&q={{ active_filters.q }}{% endif %}">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if active_filters.q %}&q={{ active_filters.q }}{% endif %}{% if active_filters.vow %}&vow={{ active_filters.vow }}{% endif %}">
                             <i class="bi bi-chevron-left"></i>
                         </a>
                     </li>
@@ -103,13 +103,13 @@
                         <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ num }}{% if active_filters.q %}&q={{ active_filters.q }}{% endif %}">{{ num }}</a>
+                            <a class="page-link" href="?page={{ num }}{% if active_filters.q %}&q={{ active_filters.q }}{% endif %}{% if active_filters.vow %}&vow={{ active_filters.vow }}{% endif %}">{{ num }}</a>
                         </li>
                         {% endif %}
                     {% endfor %}
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if active_filters.q %}&q={{ active_filters.q }}{% endif %}">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if active_filters.q %}&q={{ active_filters.q }}{% endif %}{% if active_filters.vow %}&vow={{ active_filters.vow }}{% endif %}">
                             <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
@@ -170,6 +170,21 @@
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label>Vows</label>
+                    <select name="vow" class="filter-select">
+                        <option value="">All Items</option>
+                        <option value="all" {% if active_filters.vow == "all" %}selected{% endif %}>All Vows</option>
+                        <option value="unbreakable" {% if active_filters.vow == "unbreakable" %}selected{% endif %}>Vow: Unbreakable</option>
+                        <option value="snow-grave" {% if active_filters.vow == "snow-grave" %}selected{% endif %}>Vow: Snow Grave</option>
+                        <option value="justice" {% if active_filters.vow == "justice" %}selected{% endif %}>Vow: Justice</option>
+                        <option value="impact" {% if active_filters.vow == "impact" %}selected{% endif %}>Vow: Impact</option>
+                        <option value="ceaseless-slashes" {% if active_filters.vow == "ceaseless-slashes" %}selected{% endif %}>Vow: Ceaseless Slashes</option>
+                        <option value="blood-beam" {% if active_filters.vow == "blood-beam" %}selected{% endif %}>Vow: Blood Beam</option>
+                        <option value="red-reflection" {% if active_filters.vow == "red-reflection" %}selected{% endif %}>Vow: Red Reflection</option>
+                        <option value="spatial-pulverize" {% if active_filters.vow == "spatial-pulverize" %}selected{% endif %}>Vow: Spatial Pulverize</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label>Min Value</label>
                     <input type="number" name="min_value" value="{{ active_filters.min_value }}" class="filter-input" placeholder="0">
                 </div>
@@ -186,6 +201,7 @@
                     </select>
                 </div>
                 {% if active_filters.q %}<input type="hidden" name="q" value="{{ active_filters.q }}">{% endif %}
+                {% if active_filters.vow %}<input type="hidden" name="vow" value="{{ active_filters.vow }}">{% endif %}
                 <div class="modal-footer-custom">
                     <a href="{% url 'values:item_list' %}" class="btn-secondary">Clear All</a>
                     <button type="submit" class="btn-primary">Apply Filters</button>

@@ -7,6 +7,13 @@
 <h1 id="site-name"><a href="{% url 'admin:index' %}">JJI Values Administration</a></h1>
 {% endblock %}
 
+{% block usertools %}
+{{ block.super }}
+<a href="{% url 'values:landing' %}" style="background: #79aec8; color: #fff; padding: 8px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: normal; display: inline-block; margin-left: 10px;">
+    🏠 Go to Home
+</a>
+{% endblock %}
+
 {% block extrastyle %}
 {{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static 'css/admin_custom.css' %}">

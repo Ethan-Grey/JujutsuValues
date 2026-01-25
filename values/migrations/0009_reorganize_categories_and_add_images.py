@@ -46,12 +46,15 @@ def reorganize_categories_and_add_images(apps, schema_editor):
         "Ring of Frost": armor_cat,
     }
 
-    # Move event items to proper categories
+    # Move event items to proper categories - only if category is an event category
+    event_category_slugs = ["event-items-halloween", "event-items-exchange", "event-items-winter"]
     for item_name, new_category in event_item_mapping.items():
         try:
             item = Item.objects.get(name=item_name)
-            item.category = new_category
-            item.save()
+            # Only update category if it's currently an event category (to avoid overwriting manual changes)
+            if item.category.slug in event_category_slugs:
+                item.category = new_category
+                item.save(update_fields=["category"])
         except Item.DoesNotExist:
             pass
 
@@ -127,12 +130,13 @@ def reorganize_categories_and_add_images(apps, schema_editor):
         "Release Festival": "Titles/Release_Festivle_Unobtainable.png",
     }
 
-    # Add images to items
+    # Add images to items - only if image_url is empty to preserve existing images
     for item_name, image_path in image_mapping.items():
         try:
             item = Item.objects.get(name=item_name)
-            item.image_url = f"/media/{image_path}"
-            item.save(update_fields=["image_url"])
+            if not item.image_url:  # Only update if image_url is empty
+                item.image_url = f"/media/{image_path}"
+                item.save(update_fields=["image_url"])
         except Item.DoesNotExist:
             pass
 

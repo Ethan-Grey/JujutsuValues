@@ -169,7 +169,8 @@ def upsert_items(apps, schema_editor):
         category = categories[cat_name]
         value_mid = midpoint(low, high)
         demand = demand_score(note)
-        Item.objects.update_or_create(
+        # Only create if item doesn't exist - don't update existing items to preserve production data
+        Item.objects.get_or_create(
             name=name,
             defaults={
                 "slug": slugify(name),
