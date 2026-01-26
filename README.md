@@ -1,4 +1,4 @@
-# Jujutsu Infinite Values
+# Cursed Values
 
 Value hub for the Roblox game **Jujutsu Infinite**. Players can browse trade values for items, titles, game passes, and event exclusives. Only admins can edit data; everyone else has a clean, mobile-friendly viewer inspired by community value sites.
 
