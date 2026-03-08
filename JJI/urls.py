@@ -28,6 +28,12 @@ urlpatterns = [
     path('', include('values.urls', namespace='values')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
+
+    # your existing urls...
+    path('ads.txt', TemplateView.as_view(
+        template_name='ads.txt',
+        content_type='text/plain'
+    )),
 ]
 
 # Serve media files (development and simple production setup)
